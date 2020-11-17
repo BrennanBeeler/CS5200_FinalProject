@@ -1,0 +1,12 @@
+Changes From Proposal:
+    Completed:
+        1) Added genotype table
+        2) Replaced origin cage for mouse with two recursive foreign keys
+    To be Changed:
+        1) How to get new users to be added to database?
+
+Questions:
+1) How to handle user vs admin
+    -Could try and have separate SQL users for each - seems hard/like it will be a problem
+    -Could have the login info and access be purely managed by application and all users go through same login to server
+2) How to control number of cages per rack
