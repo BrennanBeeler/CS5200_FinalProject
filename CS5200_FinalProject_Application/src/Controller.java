@@ -1,6 +1,7 @@
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Scanner;
@@ -10,31 +11,40 @@ public class Controller {
 
 	private String appUserID;
 	private String appPassword;
+	private boolean adminAccess;
+	private Connection conn;
+	private Scanner scan;
 
 	public Controller() {
 		appUserID = "";
 		appPassword = "";
+		adminAccess = false;
+		Connection conn = null;
+		Scanner scan = null;
 	}
-
 
 	// TODO move into view?
 	private Connection sqlLogin() {
 		final String database = "jdbc:mysql://localhost:3306/mouse_housing?characterEncoding=UTF-8&useSSL=false";
 		Connection conn = null;
 		boolean connFlag = false;
-		Scanner in = new Scanner(System.in);
 
 		while (!connFlag) {
+			// TODO uncomment
 			// Use scanner to get username and password
-			System.out.println("Please enter SQL login username. Type 'q' to quit.");
-			String userName = in.nextLine();
+//			System.out.println("Please enter SQL login username. Type 'q' to quit.");
+//			String userName = scan.nextLine();
+//
+//			if (userName.toLowerCase().compareTo("q") == 0) {
+//				System.exit(0);
+//			}
+//
+//			System.out.println("Please enter SQL password.");
+//			String userPassword = scan.nextLine();
 
-			if (userName.toLowerCase().compareTo("q") == 0) {
-				System.exit(0);
-			}
-
-			System.out.println("Please enter SQL password.");
-			String userPassword = in.nextLine();
+			// TODO remove
+			String userName = "root";
+			String userPassword = "orbitmyHead93";
 
 			// try to connect to server
 			try {
@@ -61,98 +71,189 @@ public class Controller {
 		return conn;
 	}
 
-	public void appLogin(Connection conn) {
-		boolean flag = false;
-		Scanner in = new Scanner(System.in);
+	private boolean appLogin_loginHelper() {
+		System.out.println("Please enter app userID.");
+		appUserID = scan.nextLine();
+		System.out.println("Please enter app password.");
+		appPassword = scan.nextLine();
 
+		try {
+			CallableStatement loginStmt = conn.prepareCall("{? = call login(?, ?)}");
+			loginStmt.registerOutParameter(1, Types.INTEGER);
+			loginStmt.setString(2, appUserID);
+			loginStmt.setString(3, appPassword);
+
+			loginStmt.execute();
+
+			int loginResult = loginStmt.getInt(1);
+
+			if (loginResult == 0) {
+				System.out.println("Those login credentials are incorrect.");
+				return false;
+			} else if (loginResult == 1) {
+				adminAccess = false;
+				System.out.println("Success- logged in as a user.");
+				return true;
+
+			} else if (loginResult == 2) {
+				adminAccess = true;
+				System.out.println("Success- logged in as a admin.");
+				return true;
+			}
+		} catch (SQLException ex) {
+			// TODO figure out what to do here
+			System.out.println("SQLException: " + ex.getMessage());
+			System.out.println("SQLState: " + ex.getSQLState());
+			System.out.println("VendorError: " + ex.getErrorCode());
+		}
+
+		return false;
+	}
+
+	private void appLogin_adrHelper(int userID) {
+		// Prompt user to add address
+		String userResponse = "";
+		while (userResponse.toLowerCase().compareTo("y") != 0 &&
+				userResponse.toLowerCase().compareTo("n") != 0) {
+			System.out.println("Would you like to add an address to the system "
+					+ "for that user?");
+			userResponse = scan.nextLine();
+		}
+
+		if (userResponse.toLowerCase().compareTo("y") == 0) {
+			boolean adrFlag = false;
+			while (!adrFlag) {
+				try {
+					CallableStatement newAddressStmt =
+							conn.prepareCall("{CALL new_address(?, ?, ?, ?, ?)}");
+					newAddressStmt.setInt(1, userID);
+
+					System.out.println("Please enter street address.");
+					String strAddress = scan.nextLine();
+					newAddressStmt.setString(2, strAddress);
+
+					System.out.println("Please enter city.");
+					String city = scan.nextLine();
+					newAddressStmt.setString(3, city);
+
+
+					System.out.println("Please enter state abbreviation.");
+					String state = scan.nextLine();
+					newAddressStmt.setString(4, state);
+
+
+					System.out.println("Please enter zip code.");
+					String zip = scan.nextLine();
+					newAddressStmt.setString(5, zip);
+
+					if (newAddressStmt.executeUpdate() >= 1) {
+						adrFlag = true;
+						System.out.println("Address successfully added to UserID: " + userID);
+					}
+				}
+				catch (SQLException e) {
+					System.out.println("An error occurred while adding the address.");
+					return;
+				}
+			}
+		}
+	}
+
+	private void appLogin_newHelper() {
+		// Create new user
+		try {
+			CallableStatement newUserStmt = conn.prepareCall("{CALL new_user(?, ?, ?, ?, ?, ?)}");
+
+			System.out.println("Please enter UserID.");
+			int userID = Integer.parseInt(scan.nextLine());
+			newUserStmt.setInt(1, userID);
+
+			System.out.println("Please enter password. 25 characters or less.");
+			String password = scan.nextLine();
+			newUserStmt.setString(2, password);
+
+			System.out.println("Please enter first name.");
+			String fname = scan.nextLine();
+			newUserStmt.setString(3, fname);
+
+			System.out.println("Please enter last name.");
+			String lname = scan.nextLine();
+			newUserStmt.setString(4, lname);
+
+			System.out.println("Please enter email.");
+			String email = scan.nextLine();
+			newUserStmt.setString(5, email);
+
+			System.out.println("Please enter phone number.");
+			String phoneNum = scan.nextLine();
+			newUserStmt.setString(6, phoneNum);
+
+			// Try and create a new user for these details
+			if (newUserStmt.executeUpdate() == 1) {
+				System.out.println("User successfully added.");
+			}
+
+			appLogin_adrHelper(userID);
+		}
+		catch (SQLException ex) {
+			if (ex.getErrorCode() == 1062) {
+				System.out.println("Duplicate UserID found. If you are sure this is your "
+						+ "user id please contact an admin for assistance.");
+			}
+			else {
+				// TODO: remove?
+				System.out.println("SQLException: " + ex.getMessage());
+				System.out.println("SQLState: " + ex.getSQLState());
+				System.out.println("VendorError: " + ex.getErrorCode());
+			}
+		}
+		catch (NumberFormatException e) {
+			System.out.println("Non-number input for UserID. Please try again.");
+		}
+	}
+
+
+	private void appLogin() {
+		boolean flag = false;
 
 		while (!flag) {
 			System.out.println("Welcome to MouseHousing. Type 'login' to connect to an existing "
 					+ "profile. Type 'new' to create a new user profile. Type 'q' to exit "
 					+ "application.");
 
-			String response = in.nextLine();
+			String response = scan.nextLine();
 
+			// User tries to login
 			if (response.toLowerCase().compareTo("login") == 0) {
-				System.out.println("Please enter app userID.");
-				appUserID = in.nextLine();
-				System.out.println("Please enter app password.");
-				appPassword = in.nextLine();
-
-				try {
-					CallableStatement loginStmt = conn.prepareCall("{? = call login(?, ?)}");
-					loginStmt.registerOutParameter(1, Types.INTEGER);
-					loginStmt.setString(2, appUserID);
-					loginStmt.setString(3, appPassword);
-
-					loginStmt.executeQuery();
-
-					int loginResult = loginStmt.getInt(1);
-
-
-					if (loginResult == -1) {
-						System.out.println("Fail");
-
-					}
-					else if (loginResult == 1) {
-						System.out.println("Success - user");
-
-					}
-					else if (loginResult == 2) {
-						System.out.println("Success - admin");
-
-					}
-
-				}
-				catch (SQLException ex) {
-					System.out.println("SQLException: " + ex.getMessage());
-					System.out.println("SQLState: " + ex.getSQLState());
-					System.out.println("VendorError: " + ex.getErrorCode());
-				}
+				flag = appLogin_loginHelper();
 			}
+			// User tries to create new user account in database
 			else if (response.toLowerCase().compareTo("new") == 0) {
-
+				appLogin_newHelper();
 			}
+			// User quits program
 			else if (response.toLowerCase().compareTo("q") == 0) {
+				scan.close();
 				System.exit(0);
 			}
-
-
 		}
-
-
-
 	}
 
 
 	public void programLoop() {
-		Connection conn = sqlLogin();
+		scan = new Scanner(System.in);
+		conn = sqlLogin();
+
 
 		if (Objects.isNull(conn)) {
 			System.out.println("Connection failed to be made.");
+			scan.close();
 			System.exit(1);
 		}
 
-		appLogin(conn);
+		appLogin();
 
-
-//		try {
-//
-//		}
-//		catch (SQLException ex) {
-//			// TODO figure out if actually want these
-//			System.out.println("SQLException: " + ex.getMessage());
-//			System.out.println("SQLState: " + ex.getSQLState());
-//			System.out.println("VendorError: " + ex.getErrorCode());
-//		}
-
-
-
-
-
-
-
-
+		// close connection and scanner
 		try {
 			conn.close();
 			if (conn.isClosed()) {
@@ -165,5 +266,7 @@ public class Controller {
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
 		}
+
+		scan.close();
 	}
 }

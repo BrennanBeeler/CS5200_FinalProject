@@ -23,8 +23,10 @@ CREATE TABLE `user`
     PhoneNum VARCHAR(11), -- maybe int?
     AdminFlag BOOLEAN DEFAULT FALSE,
     Address INT,
-    CONSTRAINT user_to_address_fk FOREIGN KEY (Address) REFERENCES address(AddressIndex) ON UPDATE RESTRICT ON DELETE SET NULL
+    CONSTRAINT user_to_address_fk FOREIGN KEY (Address) REFERENCES address(AddressIndex) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
+INSERT INTO `user` VALUE (1, "password", "Billy", "Johnson", "b_johnson@domain.com", "13032021111", TRUE, NULL);
 
 CREATE TABLE facility
 (
@@ -120,36 +122,6 @@ CREATE TABLE cages_to_mice
     CONSTRAINT cages_to_mice_to_breeding_cage_fk FOREIGN KEY (CageID) REFERENCES breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE,
     CONSTRAINT cages_to_mice_to_nonbr_cage_fk FOREIGN KEY (CageID) REFERENCES non_breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE
 );
-
-
-use mouse_housing;
-DROP FUNCTION IF EXISTS login;
-
-DELIMITER //
-CREATE FUNCTION login(
-	uName VARCHAR(255),
-    pWord VARCHAR(255)
-)
-RETURNS INT 
-DETERMINISTIC READS SQL DATA
-BEGIN   
-	DECLARE usercount INT;
-	DECLARE admincount INT;
-	SELECT COUNT(*) INTO usercount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 0;
-	SELECT COUNT(*) INTO admincount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 1;
-    
-    IF (usercount = 0 AND admincount = 0) THEN 
-		RETURN 0;
-	ELSEIF (usercount = 1) THEN 
-		RETURN 1;
-	ELSEIF (admincounter = 1) THEN 
-		RETURN 2;
-	ELSE
-		RETURN -1;
-	END IF;
-END//
-
-DELIMITER ;
 
 
 
