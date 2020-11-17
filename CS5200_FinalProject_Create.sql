@@ -75,8 +75,6 @@ CREATE TABLE mouse
     NumLitters INT DEFAULT 0,
     MaleParent INT NOT NULL,
     FemaleParent INT NOT NULL,
-    CONSTRAINT mouse_to_male_parent FOREIGN KEY (MaleParent) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT, -- Had to replace origin cage with recursive 
-    CONSTRAINT mouse_to_female_parent FOREIGN KEY (FemaleParent) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT,
     CONSTRAINT mouse_to_genotype FOREIGN KEY (GenotypeAbr) REFERENCES genotype(GenotypeAbr) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
@@ -90,9 +88,7 @@ CREATE TABLE breeding_cage
     MaleID INT NOT NULL,
     FemaleID INT NOT NULL,
     CONSTRAINT breeding_cage_to_rack FOREIGN KEY (RackID) REFERENCES rack(RackID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT breeding_cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT male_breeder_to_mouse FOREIGN KEY (MaleID) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT female_breeder_to_mouse FOREIGN KEY (FemaleID) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT breeding_cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
 CREATE TABLE non_breeding_cage
@@ -102,17 +98,64 @@ CREATE TABLE non_breeding_cage
     CageStatus ENUM('Active', 'Inactive') NOT NULL,
     RackID INT NOT NULL,
     Manager INT NOT NULL,
-    Mouse1 INT NOT NULL,
-    Mouse2 INT,
-	Mouse3 INT,
-	Mouse4 INT,
-	Mouse5 INT,
     CONSTRAINT nonbr_cage_to_rack FOREIGN KEY (RackID) REFERENCES rack(RackID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT nonbr_cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT mouse1_cage_to_mouse FOREIGN KEY (Mouse1) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT mouse2_cage_to_mouse FOREIGN KEY (Mouse2) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT mouse3_cage_to_mouse FOREIGN KEY (Mouse3) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT mouse4_cage_to_mouse FOREIGN KEY (Mouse4) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT mouse5_cage_to_mouse FOREIGN KEY (Mouse5) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CONSTRAINT nonbr_cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
+CREATE TABLE origin_cage
+(
+	Eartag INT,
+    CageID INT,
+    CONSTRAINT origin_cage_pk PRIMARY KEY (Eartag, CageID),
+    CONSTRAINT origin_cage_to_mouse_fk FOREIGN KEY (Eartag) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE CASCADE,
+    CONSTRAINT origin_cage_to_breeding_cage_fk FOREIGN KEY (CageID) REFERENCES breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+
+CREATE TABLE cages_to_mice
+(
+	Eartag INT,
+    CageID INT,
+    CONSTRAINT cages_to_mice_pk PRIMARY KEY (Eartag, CageID),
+    CONSTRAINT cages_to_mice_to_mouse_fk FOREIGN KEY (Eartag) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE CASCADE,
+    CONSTRAINT cages_to_mice_to_breeding_cage_fk FOREIGN KEY (CageID) REFERENCES breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE,
+    CONSTRAINT cages_to_mice_to_nonbr_cage_fk FOREIGN KEY (CageID) REFERENCES non_breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE
+);
+
+
+use mouse_housing;
+DROP FUNCTION IF EXISTS login;
+
+DELIMITER //
+CREATE FUNCTION login(
+	uName VARCHAR(255),
+    pWord VARCHAR(255)
+)
+RETURNS INT 
+DETERMINISTIC READS SQL DATA
+BEGIN   
+	DECLARE usercount INT;
+	DECLARE admincount INT;
+	SELECT COUNT(*) INTO usercount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 0;
+	SELECT COUNT(*) INTO admincount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 1;
+    
+    IF (usercount = 0 AND admincount = 0) THEN 
+		RETURN 0;
+	ELSEIF (usercount = 1) THEN 
+		RETURN 1;
+	ELSEIF (admincounter = 1) THEN 
+		RETURN 2;
+	ELSE
+		RETURN -1;
+	END IF;
+END//
+
+DELIMITER ;
+
+
+
+
+
+
+
+
 
