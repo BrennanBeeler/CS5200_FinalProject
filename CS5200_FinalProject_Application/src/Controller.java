@@ -7,16 +7,17 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.sql.Types;
 
+//TODO Maybe rename to not be controller since not using MCV architecture
 public class Controller {
 
-	private String appUserID;
+	private int appUserID;
 	private String appPassword;
 	private boolean adminAccess;
 	private Connection conn;
 	private Scanner scan;
 
 	public Controller() {
-		appUserID = "";
+		appUserID = -1;
 		appPassword = "";
 		adminAccess = false;
 		Connection conn = null;
@@ -71,16 +72,23 @@ public class Controller {
 		return conn;
 	}
 
+	// helps login for established users- returns true if valid login, false if not
 	private boolean appLogin_loginHelper() {
 		System.out.println("Please enter app userID.");
-		appUserID = scan.nextLine();
+		try {
+			appUserID = Integer.parseInt(scan.nextLine());
+		}
+		catch (NumberFormatException e) {
+			System.out.println("Non-number input for UserID. Please try again.");
+			return false;
+		}
 		System.out.println("Please enter app password.");
 		appPassword = scan.nextLine();
 
 		try {
 			CallableStatement loginStmt = conn.prepareCall("{? = call login(?, ?)}");
 			loginStmt.registerOutParameter(1, Types.INTEGER);
-			loginStmt.setString(2, appUserID);
+			loginStmt.setInt(2, appUserID);
 			loginStmt.setString(3, appPassword);
 
 			loginStmt.execute();
@@ -106,6 +114,7 @@ public class Controller {
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
 		}
+
 
 		return false;
 	}
@@ -239,7 +248,6 @@ public class Controller {
 		}
 	}
 
-
 	public void programLoop() {
 		scan = new Scanner(System.in);
 		conn = sqlLogin();
@@ -252,6 +260,17 @@ public class Controller {
 		}
 
 		appLogin();
+
+		UserMenuInterface menu;
+
+		if (adminAccess) {
+			menu = new AdminMenu(conn);
+		}
+		else {
+			menu = new UserMenu(conn);
+		}
+
+		menu.menuStart(appUserID);
 
 		// close connection and scanner
 		try {

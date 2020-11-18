@@ -14,6 +14,12 @@ Answered Questions:
 Questions:
 1)
 
-
-TODO:
+TODO: Finished
 1) change add address so it allows same address if entered to reference same entry
+
+TODO: TODO
+1) Create abstract class for UserMenu and AdminMenu - create statements etc. where applicable
+
+TODO: MAYBE
+- Could switch menu to "view" and pull all communication with model to the controller class
+- Increase facility name length allowed
