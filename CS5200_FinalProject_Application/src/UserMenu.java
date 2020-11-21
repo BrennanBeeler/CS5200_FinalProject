@@ -1,13 +1,12 @@
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class UserMenu implements UserMenuInterface {
-	private Connection conn;
-	private Scanner scan;
-	private int userID;
+public class UserMenu extends UserMenuAbstract {
 
+	private int userID;
 
 	public UserMenu(Connection conn) {
 		this.conn = conn;
@@ -15,6 +14,7 @@ public class UserMenu implements UserMenuInterface {
 	}
 
 	// TODO maybe make abstract for this early stuff
+
 	@Override
 	public void menuStart(int userID) {
 		this.userID = userID;
@@ -106,7 +106,7 @@ public class UserMenu implements UserMenuInterface {
 					+ "back to the previous menu.");
 			System.out.println("View Menu:\n"
 					+ "1 = view Your Address\n"
-					+ "2 = view User\n"
+					+ "2 = view Users\n"
 					+ "3 = view Facility\n"
 					+ "4 = view Room\n"
 					+ "5 = view Rack\n"
@@ -210,157 +210,89 @@ public class UserMenu implements UserMenuInterface {
 
 	@Override
 	public void addAddress() {
-		try {
-			CallableStatement newAddressStmt =
-					conn.prepareCall("{CALL new_address(?, ?, ?, ?, ?)}");
-			newAddressStmt.setInt(1, userID);
+		addAddressHelper(userID);
+	}
 
-			System.out.println("Please enter street address.");
-			String strAddress = scan.nextLine();
-			newAddressStmt.setString(2, strAddress);
-
-			System.out.println("Please enter city.");
-			String city = scan.nextLine();
-			newAddressStmt.setString(3, city);
-
-			System.out.println("Please enter state abbreviation.");
-			String state = scan.nextLine();
-			newAddressStmt.setString(4, state);
-
-			System.out.println("Please enter zip code.");
-			String zip = scan.nextLine();
-			newAddressStmt.setString(5, zip);
-
-			if (newAddressStmt.executeUpdate() == 1) {
-				System.out.println("Address successfully added to UserID: " + userID + "\n");
-			}
+	@Override
+	public void addCage() {
+		String input = "";
+		while (input.toLowerCase().compareTo("y") != 0
+				&& input.toLowerCase().compareTo("n") != 0) {
+			System.out.println("Is the cage a breeding-cage? (y/n)");
+			input = scan.nextLine();
 		}
-		catch (SQLException e) {
-			System.out.println("An error occurred while adding the address.");
+
+		if (input.toLowerCase().compareTo("y") == 0) {
+			addBreedingCage(userID);
+		}
+		else {
+			addNonBreedingCage(userID);
 		}
 	}
 
 	@Override
-	public void addFacility() {
+	public void addMouse() {
+		addMouseHelper(userID);
+	}
+
+	@Override
+	public void viewAddress() {
+		viewAddressHelper(userID);
+	}
+
+	@Override
+	public void viewUser() {
 		try {
-			CallableStatement newAddressStmt =
-					conn.prepareCall("{CALL new_facility(?, ?)}");
+			// Only allows user to see UserID, FirstName, LastName
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL user_view_user()}");
+			ResultSet rs = callableStatement.executeQuery();
 
-			System.out.println("Please facility ID.");
-			int fID = Integer.parseInt(scan.nextLine());
-			newAddressStmt.setInt(1, fID);
-
-			System.out.println("Please enter facility name.");
-			String fname = scan.nextLine();
-			newAddressStmt.setString(2, fname);
-
-			if (newAddressStmt.executeUpdate() == 1) {
-				System.out.println("Facility successfully added to database.\n");
+			while (rs.next()) {
+				int uID = rs.getInt("UserID");
+				String fName = rs.getString("FirstName");
+				String lName = rs.getString("LastName");
+				System.out.println(uID +", " + fName + " " + lName);
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the facility.");
+			System.out.println("An error occurred while adding the rack.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided facilityID was not an integer.");
+			System.out.println("Provided values where not properly formatted as integers.");
 		}
 	}
 
 	@Override
-	public void addRoom() {
-
-	}
-
-	@Override
-	public void addRack() {
-
-	}
-
-	@Override
-	public void addCage() {
-
-	}
-
-	@Override
-	public void addMouse() {
-
-	}
-
-	@Override
-	public void addGenotype() {
-
-	}
-
-	@Override
-	public void viewAddress() {
-
-	}
-
-	@Override
-	public void viewUser() {
-
-	}
-
-	@Override
-	public void viewFacility() {
-
-	}
-
-	@Override
-	public void viewRoom() {
-
-	}
-
-	@Override
-	public void viewRack() {
-
-	}
-
-	@Override
-	public void viewCage() {
-
-	}
-
-	@Override
-	public void viewMouse() {
-
-	}
-
-	@Override
-	public void viewGenotype() {
-
-	}
-
-	@Override
 	public void updateAddress() {
-
+		updateAddressHelper(userID);
 	}
 
 	@Override
 	public void updateCage() {
-
+		updateCageHelper(userID);
 	}
 
 	@Override
 	public void updateMouse() {
-
+		updateMouseHelper(userID);
 	}
 
 	@Override
 	public void deleteAddress() {
-
+		deleteAddressHelper(userID);
 	}
 
 	@Override
 	public void deleteCage() {
-
+		deleteCageHelper(userID);
 	}
 
 	@Override
 	public void deleteMouse() {
-
+		deleteMouseHelper(userID);
 	}
 }

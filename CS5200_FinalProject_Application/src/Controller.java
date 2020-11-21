@@ -1,7 +1,6 @@
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.Scanner;
@@ -125,7 +124,7 @@ public class Controller {
 		while (userResponse.toLowerCase().compareTo("y") != 0 &&
 				userResponse.toLowerCase().compareTo("n") != 0) {
 			System.out.println("Would you like to add an address to the system "
-					+ "for that user?");
+					+ "for that user? (y/n)");
 			userResponse = scan.nextLine();
 		}
 

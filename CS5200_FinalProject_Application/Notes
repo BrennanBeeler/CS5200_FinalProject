@@ -18,8 +18,26 @@ TODO: Finished
 1) change add address so it allows same address if entered to reference same entry
 
 TODO: TODO
-1) Create abstract class for UserMenu and AdminMenu - create statements etc. where applicable
-
+- Create abstract class for UserMenu and AdminMenu - create statements etc. where applicable
+- Remove filled slots from rack and instead use a trigger to determine if okay to add cage to
+a rack
+- Make sure that each call to stored procedure is protected with catch that is appropriate
+- Add user view of facility access- but just their own
 TODO: MAYBE
 - Could switch menu to "view" and pull all communication with model to the controller class
 - Increase facility name length allowed
+
+
+
+
+Thinking:
+-Adding is easy - just input data when asked for it (both user and admin)
+-Removing should be restrictive and only allow deletion of one at a time, since data should only
+    be removed from database if there was some kind of entry error/massive change in real world
+-Update should allow more broad scope changes
+    + User should only be able to make small single serving updates...
+
+
+-View
+    -To view mouse - mouse data + cage + rack + room + facility + manager
+        + Filter by various stuff - sex, manager, facility, room, rack, cage, genotype

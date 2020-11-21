@@ -95,3 +95,30 @@ BEGIN
 END //
 
 DELIMITER ;
+
+-- ------------------------------------------------------------------
+DROP PROCEDURE IF EXISTS user_view_user;
+
+DELIMITER //
+
+CREATE PROCEDURE user_view_user()
+BEGIN
+	SELECT UserID, FirstName, LastName FROM `user`;
+END //
+
+DELIMITER ;
+
+
+-- ----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS admin_view_user;
+
+DELIMITER //
+
+CREATE PROCEDURE admin_view_user()
+BEGIN
+	SELECT UserID, UserPassword, FirstName, LastName, Email, PhoneNum, AdminFlag, CONCAT(a.Street, " ", a.City, " ", a.State, " ", a.Zip) AS "Address" FROM `user` AS u
+    LEFT OUTER JOIN address AS a
+    ON u.Address = a.AddressIndex;
+END //
+
+DELIMITER ;
