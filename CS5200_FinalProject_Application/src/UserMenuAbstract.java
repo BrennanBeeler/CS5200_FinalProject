@@ -1,5 +1,6 @@
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.ParseException;
@@ -32,9 +33,8 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			String zip = scan.nextLine();
 			newAddressStmt.setString(5, zip);
 
-			if (newAddressStmt.executeUpdate() == 1) {
-				System.out.println("Address successfully added to UserID: " + userID + "\n");
-			}
+			newAddressStmt.executeUpdate();
+			System.out.println("Address successfully added to UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
 			System.out.println("An error occurred while adding the address.");
@@ -238,38 +238,96 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			int cageID = Integer.parseInt(scan.nextLine());
 			callableStatement.setInt(6, cageID);
 
-			System.out.println("Please enter origin cage ID.");
-			int origin = Integer.parseInt(scan.nextLine());
-			callableStatement.setInt(7, origin);
+			// Allows mice from external sources to be entered as null - should be only way
+			input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Mouse from external source? (y/n)");
+				input = scan.nextLine();
+			}
+
+			if (input.toLowerCase().compareTo("y") == 0) {
+				callableStatement.setNull(7, Types.INTEGER);
+			}
+			else {
+				System.out.println("Please enter origin cage ID.");
+				int origin = Integer.parseInt(scan.nextLine());
+				callableStatement.setInt(7, origin);
+			}
 
 			// TO be used to confirm that the mouse is added to a cage managed by specified user
 			callableStatement.setInt(8, userID);
 
-			// TODO check this
 			if (callableStatement.executeUpdate() == 1) {
-				System.out.println("Cage successfully added to database.\n");
+				System.out.println("Mouse successfully added to database.\n");
 			}
 		}
 		catch (SQLException e) {
+
 			System.out.println("An error occurred while adding the mouse.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 		catch (NumberFormatException nx) {
 			System.out.println("Provided values where not properly formatted as integers.");
-		} catch (ParseException e) {
+		}
+		catch (ParseException e) {
 			System.out.println("Error in date formatting.");
 		}
 	}
 
 	@Override
 	public void addGenotype() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL new_genotype(?, ?)}");
 
+			System.out.println("Please enter genotype abbreviation.");
+			String genoabr = scan.nextLine();
+			callableStatement.setString(1, genoabr);
+
+			System.out.println("Please enter full genotype.");
+			String genofull = scan.nextLine();
+			callableStatement.setString(2, genofull);
+
+			if (callableStatement.executeUpdate() == 1) {
+				System.out.println("Genotype successfully added to database.\n");
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("An error occurred while adding the genotype.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
 	protected void viewAddressHelper(int userID) {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_address(?)}");
+			callableStatement.setInt(1, userID);
 
+			ResultSet rs = callableStatement.executeQuery();
+
+			while (rs.next()) {
+				String address = rs.getString("Address");
+				System.out.println("UserID " + userID + "address: " + address);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("An error occurred while viewing the address.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
 	@Override
@@ -299,7 +357,24 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 	@Override
 	public void viewGenotype() {
+		try {
+			// Only allows user to see UserID, FirstName, LastName
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_genotype()}");
+			ResultSet rs = callableStatement.executeQuery();
 
+			while (rs.next()) {
+				String genoabr = rs.getString("GenotypeAbr");
+				String genofull = rs.getString("GenotypeDetails");
+				System.out.println(genoabr + ": " + genofull);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("An error occurred while accessing genotype data.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
 	protected void updateMouseHelper(int userID) {
@@ -312,7 +387,38 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 	}
 
 	protected void updateAddressHelper(int userID) {
+		try {
+			// Only allows user to see UserID, FirstName, LastName
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_address(?, ?, ?, ?, ?)}");
+			callableStatement.setInt(1, userID);
 
+			System.out.println("Please enter street address.");
+			String strAddress = scan.nextLine();
+			callableStatement.setString(2, strAddress);
+
+			System.out.println("Please enter city.");
+			String city = scan.nextLine();
+			callableStatement.setString(3, city);
+
+			System.out.println("Please enter state abbreviation.");
+			String state = scan.nextLine();
+			callableStatement.setString(4, state);
+
+			System.out.println("Please enter zip code.");
+			String zip = scan.nextLine();
+			callableStatement.setString(5, zip);
+
+			callableStatement.execute();
+
+			System.out.println("Address successfully updated for UserID: " + userID + "\n");
+		}
+		catch (SQLException e) {
+			System.out.println("An error occurred while updating address.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
 	// Needs to delete address if user is only person there, else remove the address from that user

@@ -63,6 +63,13 @@ BEGIN
 	DECLARE pk_adr INT;
     DECLARE temp INT;
     
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+		END;
+        
+	START TRANSACTION;
+    
     -- Determine if the exact address already exists in the table
     SELECT COUNT(*) INTO temp FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
     
@@ -75,6 +82,8 @@ BEGIN
 	END IF;
     
     UPDATE `user` SET Address = pk_adr WHERE UserID = user_id;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -195,10 +204,25 @@ CREATE PROCEDURE new_mouse
     IN manID INT
 )
 BEGIN
-	IF (EXISTS (SELECT CageID FROM cage WHERE ManagerID = manID AND CageID = cID))
-	&& ((originID && cID) IN (SELECT CageID FROM cage)) AND cID != originID THEN
-		INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
-	END IF;
+	-- IF (EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID))
+-- 	AND ((originID AND cID) IN (SELECT CageID FROM cage)) AND cID != originID THEN
+-- 		INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+-- 	END IF;
+
+		
+	
+IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
+	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "Cannot add mouse to cage of another user."; -- make sure not causing admin to see this
+ELSEIF (cID) NOT IN (SELECT CageID FROM cage) THEN
+	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "Cannot add mouse to cage that doens't exist.";
+ELSEIF (cID != originID ) THEN
+	SIGNAL SQLSTATE '45000'
+		SET MESSAGE_TEXT = "Cannot have same cage and origin cage.";
+ELSE
+	INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+END IF;
 
 	
 END //
@@ -206,31 +230,120 @@ END //
 DELIMITER ;
 
 -- ------------------------------------------------------------------------
--- DROP TRIGGER IF EXISTS insert_mouse_cage_limit;
+DROP TRIGGER IF EXISTS insert_mouse_cage_limit;
 
--- DELIMITER //
+DELIMITER //
 
--- CREATE TRIGGER mouse_cage_limit
--- 	BEFORE INSERT ON mouse
---     FOR EACH ROW
--- BEGIN
--- 	CASE 
--- 		WHEN EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = TRUE AND c.CageID = NEW.CageID) THEN 
--- 			IF (SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5 THEN
--- 				SIGNAL SQLSTATE '45000'
--- 					SET MESSAGE_TEXT = "Cannot house more than 5 mice in a cage.";
--- 			END IF;
--- 		ELSE 
--- 			IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'M') >= 1 THEN
--- 				SIGNAL SQLSTATE '45000'
--- 					SET MESSAGE_TEXT = "Already a male breeder in this cage.";
--- 			ELSE IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'F') >= 1 THEN
--- 				SIGNAL SQLSTATE '45000'
--- 					SET MESSAGE_TEXT = "Already a female breeder in this cage.";
--- 			END IF;
--- 		END IF;
--- 		
--- 	END CASE;
--- END //
--- DELIMITER ;
+CREATE TRIGGER insert_mouse_cage_limit
+	BEFORE INSERT ON mouse
+    FOR EACH ROW
+BEGIN 
+	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
+		IF (SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "Cannot house more than 5 mice in a cage.";
+		END IF;
+	ELSE 
+		IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'M' AND NEW.CageID = m2.CageID) >= 1 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "Already a male breeder in this cage.";
+		ELSEIF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'F' AND NEW.CageID = m2.CageID) >= 1 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "Already a female breeder in this cage.";
+		END IF;
+	END IF;
+		
+END //
+DELIMITER ;
+
+-- ----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS new_genotype;
+
+DELIMITER //
+
+CREATE PROCEDURE new_genotype
+(
+	IN genoabr VARCHAR(10),
+    IN genofull VARCHAR(200)
+)
+BEGIN
+	INSERT INTO genotype VALUE(genoabr, genofull);
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_genotype;
+
+DELIMITER //
+
+CREATE PROCEDURE view_genotype()
+BEGIN
+	SELECT * FROM genotype;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_address;
+
+DELIMITER //
+
+CREATE PROCEDURE update_address
+(
+	IN uID INT,
+    IN str VARCHAR(50),
+    IN city VARCHAR(50),
+    IN state VARCHAR(2),
+    IN zip VARCHAR(10)
+)
+BEGIN
+	DECLARE adrID INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+	START TRANSACTION;
+    
+	SELECT Address INTO adrID FROM `user` WHERE UserID = uID;
+    
+    IF (SELECT COUNT(*) FROM `user` WHERE adrID = Address) > 1 THEN
+		-- Multiple people at address
+        INSERT INTO address (Street, City, State, Zip) VALUE(str, city, state, zip);
+        SELECT AddressIndex INTO adrID FROM address AS a WHERE a.Street = str AND a.City = city AND a.State = state AND a.Zip = zip;
+        UPDATE `user` SET Address = adrID WHERE UserID = uID; 
+	ELSE
+		UPDATE address AS a SET a.Street = str, a.City = city, a.State = state, a.Zip = zip WHERE AddressIndex = adrID; 
+    END IF;
+    
+    COMMIT;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_address;
+
+DELIMITER //
+
+CREATE PROCEDURE view_address
+(
+	IN uID INT
+)
+BEGIN
+	SELECT CONCAT(Street, " ", City, " ", State, " ", Zip) AS "Address" FROM address WHERE AddressIndex = (SELECT Address FROM `user` WHERE UserID = uID);
+END //
+
+DELIMITER ;
+
+
+
+
+
 

@@ -25,6 +25,9 @@ a rack- if inactive-> doesn't count
 - Make sure that each call to stored procedure is protected with catch that is appropriate
 - Add user view of facility access- but just their own
 - turn new_address into transaction
+-keep makes and females separate
+
+
 TODO: MAYBE
 - Could switch menu to "view" and pull all communication with model to the controller class
 - Increase facility name length allowed

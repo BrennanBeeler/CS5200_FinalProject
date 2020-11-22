@@ -101,7 +101,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 	}
 
-
 	// TODO: needs to be tested
 	@Override
 	public void viewUser() {

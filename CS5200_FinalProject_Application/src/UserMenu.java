@@ -21,7 +21,7 @@ public class UserMenu extends UserMenuAbstract {
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("q") != 0) {
-			System.out.println("Type the number of the menu option you would like. Type q to quit.");
+			System.out.println("\nType the number of the menu option you would like. Type q to quit.");
 			System.out.println("Menu:\n"
 					+ "1 = add data\n"
 					+ "2 = view data\n"
@@ -56,7 +56,7 @@ public class UserMenu extends UserMenuAbstract {
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("b") != 0) {
-			System.out.println("Type the number of the menu option you would like. Type b to go "
+			System.out.println("\nType the number of the menu option you would like. Type b to go "
 					+ "back to the previous menu.");
 			System.out.println("Add Menu:\n"
 					+ "1 = add new Your Address\n"
@@ -102,7 +102,7 @@ public class UserMenu extends UserMenuAbstract {
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("b") != 0) {
-			System.out.println("Type the number of the menu option you would like. Type b to go "
+			System.out.println("\nType the number of the menu option you would like. Type b to go "
 					+ "back to the previous menu.");
 			System.out.println("View Menu:\n"
 					+ "1 = view Your Address\n"
@@ -152,7 +152,7 @@ public class UserMenu extends UserMenuAbstract {
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("b") != 0) {
-			System.out.println("Type the number of the menu option you would like. Type b to go "
+			System.out.println("\nType the number of the menu option you would like. Type b to go "
 					+ "back to the previous menu.");
 			System.out.println("Update Menu:\n"
 					+ "1 = update Your Address\n"
@@ -182,7 +182,7 @@ public class UserMenu extends UserMenuAbstract {
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("b") != 0) {
-			System.out.println("Type the number of the menu option you would like. Type b to go "
+			System.out.println("\nType the number of the menu option you would like. Type b to go "
 					+ "back to the previous menu.");
 			System.out.println("Update Menu:\n"
 					+ "1 = delete Your Address\n"
@@ -235,11 +235,11 @@ public class UserMenu extends UserMenuAbstract {
 		addMouseHelper(userID);
 	}
 
-	// might not need to exist?
 	@Override
 	public void viewAddress() {
 		viewAddressHelper(userID);
 	}
+
 
 	@Override
 	public void viewUser() {

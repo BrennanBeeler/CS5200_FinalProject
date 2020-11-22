@@ -129,40 +129,31 @@ public class Controller {
 		}
 
 		if (userResponse.toLowerCase().compareTo("y") == 0) {
-			boolean adrFlag = false;
-			while (!adrFlag) {
-				try {
-					CallableStatement newAddressStmt =
-							conn.prepareCall("{CALL new_address(?, ?, ?, ?, ?)}");
-					newAddressStmt.setInt(1, userID);
+			try {
+				CallableStatement newAddressStmt =
+						conn.prepareCall("{CALL new_address(?, ?, ?, ?, ?)}");
+				newAddressStmt.setInt(1, userID);
 
-					System.out.println("Please enter street address.");
-					String strAddress = scan.nextLine();
-					newAddressStmt.setString(2, strAddress);
+				System.out.println("Please enter street address.");
+				String strAddress = scan.nextLine();
+				newAddressStmt.setString(2, strAddress);
 
-					System.out.println("Please enter city.");
-					String city = scan.nextLine();
-					newAddressStmt.setString(3, city);
+				System.out.println("Please enter city.");
+				String city = scan.nextLine();
+				newAddressStmt.setString(3, city);
 
+				System.out.println("Please enter state abbreviation.");
+				String state = scan.nextLine();
+				newAddressStmt.setString(4, state);
 
-					System.out.println("Please enter state abbreviation.");
-					String state = scan.nextLine();
-					newAddressStmt.setString(4, state);
+				System.out.println("Please enter zip code.");
+				String zip = scan.nextLine();
+				newAddressStmt.setString(5, zip);
 
-
-					System.out.println("Please enter zip code.");
-					String zip = scan.nextLine();
-					newAddressStmt.setString(5, zip);
-
-					if (newAddressStmt.executeUpdate() >= 1) {
-						adrFlag = true;
-						System.out.println("Address successfully added to UserID: " + userID);
-					}
-				}
-				catch (SQLException e) {
-					System.out.println("An error occurred while adding the address.");
-					return;
-				}
+				System.out.println("Address successfully added to UserID: " + userID);
+			}
+			catch (SQLException e) {
+				System.out.println("An error occurred while adding the address.");
 			}
 		}
 	}

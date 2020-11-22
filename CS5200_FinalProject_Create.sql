@@ -57,7 +57,7 @@ CREATE TABLE room
     CONSTRAINT room_to_facility_fk FOREIGN KEY (FacilityID) REFERENCES facility(FacilityID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (1, 20, 'light');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (1, 1, 'light');
 
 CREATE TABLE rack
 (
@@ -68,11 +68,15 @@ CREATE TABLE rack
     CONSTRAINT rack_to_room_fk FOREIGN KEY (RoomID) REFERENCES room(RoomID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
+INSERT INTO rack VALUE (1, 100, 0, 1);
+
 CREATE TABLE genotype
 (
 	GenotypeAbr VARCHAR(10) PRIMARY KEY, 				-- Had to add table to avoid large amount of typing with every mouse
     GenotypeDetails VARCHAR(200) NOT NULL UNIQUE
 );
+
+INSERT INTO genotype VALUE("test", "testing info");
 
 CREATE TABLE cage
 (
@@ -86,6 +90,10 @@ CREATE TABLE cage
     CONSTRAINT cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
+INSERT INTO cage VALUE(1, "test", 'Active', 1, 2, FALSE);
+INSERT INTO cage VALUE(2, "test", 'Active', 1, 2, TRUE);
+
+
 CREATE TABLE mouse
 (
 	Eartag INT PRIMARY KEY,
@@ -94,8 +102,11 @@ CREATE TABLE mouse
     DOB DATE NOT NULL,
     DateOfDeath DATE DEFAULT NULL,
     CageID INT NOT NULL,
-    OriginCage INT NOT NULL,
+    OriginCage INT,
     CONSTRAINT mouse_to_genotype FOREIGN KEY (GenotypeAbr) REFERENCES genotype(GenotypeAbr) ON UPDATE RESTRICT ON DELETE RESTRICT,
 	CONSTRAINT mouse_to_cage_fk FOREIGN KEY (CageID) REFERENCES cage(CageID) ON UPDATE RESTRICT ON DELETE RESTRICT,
 	CONSTRAINT mouse_to_origincage FOREIGN KEY (CageID) REFERENCES cage(CageID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
+INSERT INTO mouse VALUES (1, "test", "m", "2000-11-11", NULL, 1, 2), (2, "test", "m", "2000-11-11", NULL, 1, 2), 
+						(3, "test", "m", "2000-11-11", NULL, 1, 2), (4, "test", "m", "2000-11-11", NULL, 1, 2);
