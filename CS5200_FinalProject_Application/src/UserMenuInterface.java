@@ -16,6 +16,7 @@ public interface UserMenuInterface {
 	void viewAddress();
 	void viewUser();
 	void viewFacility();
+	void viewFacilityAccess();
 	void viewRoom();
 	void viewRack();
 	void viewCage();

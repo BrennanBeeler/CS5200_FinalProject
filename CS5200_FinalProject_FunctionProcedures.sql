@@ -213,13 +213,13 @@ BEGIN
 	
 IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
 	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "Cannot add mouse to cage of another user."; -- make sure not causing admin to see this
+		SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage of another user."; -- make sure not causing admin to see this
 ELSEIF (cID) NOT IN (SELECT CageID FROM cage) THEN
 	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "Cannot add mouse to cage that doens't exist.";
+		SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage that doens't exist.";
 ELSEIF (cID != originID ) THEN
 	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "Cannot have same cage and origin cage.";
+		SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
 ELSE
 	INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
 END IF;
@@ -241,15 +241,15 @@ BEGIN
 	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
 		IF (SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5 THEN
 			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "Cannot house more than 5 mice in a cage.";
+				SET MESSAGE_TEXT = "ERROR: Cannot house more than 5 mice in a cage.";
 		END IF;
 	ELSE 
 		IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'M' AND NEW.CageID = m2.CageID) >= 1 THEN
 			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "Already a male breeder in this cage.";
+				SET MESSAGE_TEXT = "ERROR: Already a male breeder in this cage.";
 		ELSEIF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'F' AND NEW.CageID = m2.CageID) >= 1 THEN
 			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "Already a female breeder in this cage.";
+				SET MESSAGE_TEXT = "ERROR: Already a female breeder in this cage.";
 		END IF;
 	END IF;
 		
@@ -337,12 +337,151 @@ CREATE PROCEDURE view_address
 	IN uID INT
 )
 BEGIN
-	SELECT CONCAT(Street, " ", City, " ", State, " ", Zip) AS "Address" FROM address WHERE AddressIndex = (SELECT Address FROM `user` WHERE UserID = uID);
+	IF (SELECT Address FROM `user` WHERE UserID = uID) IS NULL THEN
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "No address associated with user.";
+	ELSE
+		SELECT CONCAT(Street, " ", City, " ", State, " ", Zip) AS "Address" FROM address WHERE AddressIndex = (SELECT Address FROM `user` WHERE UserID = uID);
+	END IF;
 END //
 
 DELIMITER ;
 
 
+-- --------------------------------------------------------------
+DROP PROCEDURE IF EXISTS view_facility;
+
+DELIMITER //
+
+CREATE PROCEDURE view_facility()
+BEGIN
+	SELECT f.FacilityID, f.FacilityName, (SELECT COUNT(*) FROM room AS r WHERE r.FacilityID = f.FacilityID) AS roomCount
+    FROM facility AS f;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+DROP PROCEDURE IF EXISTS view_facility_access;
+
+DELIMITER //
+
+CREATE PROCEDURE view_facility_access
+(
+	IN uID INT
+)
+BEGIN
+	IF (uID = NULL) THEN
+		SELECT uf.UserID, u.FirstName, u.LastName, uf.FacilityID, f.FacilityName 
+        FROM user_facility_access AS uf 
+        INNER JOIN `user` AS u
+        ON uf.UserID = u.UserID
+        INNER JOIN facility AS f
+        ON uf.FacilityID = f.FacilityID;
+    ELSE
+		SELECT uf.UserID, u.FirstName, u.LastName, uf.FacilityID, f.FacilityName 
+		FROM user_facility_access AS uf 
+        INNER JOIN `user` AS u
+		ON uf.UserID = u.UserID
+		INNER JOIN facility AS f
+		ON uf.FacilityID = f.FacilityID
+		WHERE uf.UserID = uID;
+    END IF;
+
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_address;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_address
+(
+	IN uID INT
+)
+BEGIN
+	DECLARE adrID INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+	START TRANSACTION;
+    
+	SELECT Address INTO adrID FROM `user` WHERE UserID = uID;
+    
+    IF (SELECT COUNT(*) FROM `user` WHERE adrID = Address) > 1 THEN
+		-- Multiple people at address
+        UPDATE `user` SET Address = NULL WHERE UserID = uID; 
+	ELSE
+		UPDATE `user` SET Address = NULL WHERE UserID = uID;
+		DELETE FROM address WHERE AddressIndex = adrID; 
+    END IF;
+    
+    COMMIT;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_cage;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_cage
+(
+	IN uID INT,
+    IN cID INT
+)
+BEGIN
+	IF (uid) IS NULL THEN
+		DELETE FROM cage WHERE CageID = cID; -- -------------------- TODO test this part
+	ELSE 
+		IF cID IN (SELECT CageID FROM cage WHERE Manager = uID) THEN
+			DELETE FROM cage WHERE CageID = cID;
+		ELSE 
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot delete cage that you do not manage.";
+		END IF;
+    END IF;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_mouse;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_mouse
+(
+	IN uID INT,
+    IN eTag INT
+)
+BEGIN
+	IF (uid) IS NULL THEN
+		DELETE FROM mouse WHERE Eartag = eTag; -- -------------------- TODO test this part
+	ELSE 
+		IF eTag IN (SELECT Eartag FROM mouse AS m LEFT OUTER JOIN cage AS c ON m.CageID = c.CageID WHERE c.Manager = uID) THEN
+			DELETE FROM mouse WHERE Eartag = eTag;
+		ELSEIF eTag IN (SELECT Eartag FROM mouse) THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot delete record of mouse that you do not manage.";
+		ELSE 
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot delete record of mouse that does not exist.";
+		END IF;
+    END IF;
+END //
+
+DELIMITER ;
 
 
 

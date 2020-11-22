@@ -37,7 +37,7 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			System.out.println("Address successfully added to UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the address.");
+			System.out.println("ERROR: An error occurred while adding the address.");
 		}
 	}
 
@@ -60,13 +60,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the facility.");
+			System.out.println("ERROR: An error occurred while adding the facility.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided facilityID was not an integer.");
+			System.out.println("ERROR: Provided facilityID was not an integer.");
 		}
 	}
 
@@ -101,13 +101,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the room.");
+			System.out.println("ERROR: An error occurred while adding the room.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided roomID/facilityID was not an integer.");
+			System.out.println("ERROR: Provided roomID/facilityID was not an integer.");
 		}
 	}
 
@@ -137,13 +137,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the rack.");
+			System.out.println("ERROR: An error occurred while adding the rack.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided values where not properly formatted as integers.");
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
 		}
 	}
 
@@ -177,13 +177,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the cage.");
+			System.out.println("ERROR: An error occurred while adding the cage.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided values where not properly formatted as integers.");
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
 		}
 	}
 
@@ -263,23 +263,21 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-
-			System.out.println("An error occurred while adding the mouse.");
-
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
 			else {
+				System.out.println("ERROR: An error occurred while adding the mouse.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
 				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided values where not properly formatted as integers.");
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
 		}
 		catch (ParseException e) {
-			System.out.println("Error in date formatting.");
+			System.out.println("ERROR: Incorrect date formatting.");
 		}
 	}
 
@@ -302,7 +300,7 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the genotype.");
+			System.out.println("ERROR: An error occurred while adding the genotype.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
@@ -319,37 +317,64 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			while (rs.next()) {
 				String address = rs.getString("Address");
-				System.out.println("UserID " + userID + "address: " + address);
+				System.out.println("UserID " + userID + " address: " + address);
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while viewing the address.");
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while viewing the address.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+	}
+
+	@Override
+	public void viewFacility() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_facility()}");
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			while (rs.next()) {
+				int fID = rs.getInt("FacilityID");
+				String facilityName = rs.getString("FacilityName");
+				int roomCount = rs.getInt("roomCount");
+				System.out.println(fID + ": " + facilityName + ", # rooms: " + roomCount);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing facilities.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 	}
 
-	@Override
-	public void viewFacility() {
-
-	}
-
+	// TODO
 	@Override
 	public void viewRoom() {
 
 	}
 
+	// TODO
 	@Override
 	public void viewRack() {
 
 	}
 
+	// TODO
 	@Override
 	public void viewCage() {
 
 	}
 
+	// TODO
 	@Override
 	public void viewMouse() {
 
@@ -370,20 +395,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while accessing genotype data.");
+			System.out.println("ERROR: An error occurred while accessing genotype data.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
-	}
-
-	protected void updateMouseHelper(int userID) {
-
-	}
-
-	protected void updateCageHelper(int userID) {
-		// when update to inactive - rack doesnt count against number on rack
-
 	}
 
 	protected void updateAddressHelper(int userID) {
@@ -414,7 +430,7 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			System.out.println("Address successfully updated for UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while updating address.");
+			System.out.println("ERROR: An error occurred while updating address.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
@@ -423,15 +439,21 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 	// Needs to delete address if user is only person there, else remove the address from that user
 	protected void deleteAddressHelper(int userID) {
+		try {
+			// Only allows user to see UserID, FirstName, LastName
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_address(?)}");
+			callableStatement.setInt(1, userID);
 
+			callableStatement.execute();
+
+			System.out.println("\nAddress successfully deleted for UserID: " + userID + "\n");
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while deleting address.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
-
-	protected void deleteCageHelper(int userID) {
-
-	}
-
-	protected void deleteMouseHelper(int userID) {
-
-	}
-
 }

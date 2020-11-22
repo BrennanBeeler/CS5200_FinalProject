@@ -18,6 +18,32 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 	@Override
 	public void viewFacilityAccess() {
+//		try {
+//			// Only allows user to see UserID, FirstName, LastName
+//			CallableStatement callableStatement =
+//					conn.prepareCall("{CALL viewFacilityAccess()}");
+//			callableStatement.setInt(1, userID);
+//			ResultSet rs = callableStatement.executeQuery();
+//
+//			while (rs.next()) {
+//				int uID = rs.getInt("UserID");
+//				String fName = rs.getString("FirstName");
+//				String lName = rs.getString("LastName");
+//				int facilityID = rs.getInt("FacilityID");
+//				String facilityName = rs.getString("FacilityName");
+//
+//				System.out.println(uID +", " + fName + " " + lName);
+//			}
+//		}
+//		catch (SQLException e) {
+//			System.out.println("ERROR: An error occurred while adding the rack.");
+//			System.out.println("SQLException: " + e.getMessage());
+//			System.out.println("SQLState: " + e.getSQLState());
+//			System.out.println("VendorError: " + e.getErrorCode());
+//		}
+//		catch (NumberFormatException nx) {
+//			System.out.println("ERROR: Provided values where not properly formatted as integers.");
+//		}
 
 	}
 
@@ -130,13 +156,13 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			System.out.println();
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while getting user data.");
+			System.out.println("ERROR: An error occurred while getting user data.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
-			System.out.println("Provided values where not properly formatted as integers.");
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
 		}
 
 	}

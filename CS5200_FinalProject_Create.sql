@@ -13,6 +13,8 @@ CREATE TABLE address
     CONSTRAINT unique_address UNIQUE (Street, City, State, Zip)
 );
 
+INSERT INTO address (Street, City, State, Zip) VALUE("181 Main Street", "Boston", "MA", "02111");
+
 CREATE TABLE `user`
 (
 	UserID INT PRIMARY KEY,
@@ -26,8 +28,8 @@ CREATE TABLE `user`
     CONSTRAINT user_to_address_fk FOREIGN KEY (Address) REFERENCES address(AddressIndex) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-INSERT INTO `user` VALUE (1, "password", "Billy", "Johnson", "b_johnson@domain.com", "13032021111", TRUE, NULL);
-INSERT INTO `user` VALUE (2, "test", "Joe", "White", "j_white@domain.com", "9491230303", FALSE, NULL);
+INSERT INTO `user` VALUE (1, "password", "Billy", "Johnson", "b_johnson@domain.com", "13032021111", TRUE, 1);
+INSERT INTO `user` VALUE (2, "test", "Joe", "White", "j_white@domain.com", "9491230303", FALSE, 1);
 
 
 CREATE TABLE facility
@@ -37,6 +39,10 @@ CREATE TABLE facility
 );
 
 INSERT INTO facility VALUE (1, "Johnson Science Center");
+INSERT INTO facility VALUE (23, "Medical Research Hub");
+INSERT INTO facility VALUE (34, "Alvarez Building");
+INSERT INTO facility VALUE (53, "Center for Biochemical Research");
+
 
 CREATE TABLE user_facility_access
 (
@@ -46,6 +52,13 @@ CREATE TABLE user_facility_access
     CONSTRAINT facility_access_to_user_fk FOREIGN KEY (UserID) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE CASCADE,
     CONSTRAINT facility_access_to_facility_fk FOREIGN KEY (FacilityID) REFERENCES facility(FacilityID) ON UPDATE RESTRICT ON DELETE CASCADE
 );
+
+INSERT INTO user_facility_access VALUE(1, 1);
+INSERT INTO user_facility_access VALUE(1, 23);
+INSERT INTO user_facility_access VALUE(1, 53);
+INSERT INTO user_facility_access VALUE(2, 1);
+INSERT INTO user_facility_access VALUE(2, 34);
+
 
 CREATE TABLE room
 (
@@ -58,6 +71,13 @@ CREATE TABLE room
 );
 
 INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (1, 1, 'light');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (1, 102, 'dark');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (1, 110, 'dark');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (23, 23, 'light');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (23, 58, 'light');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (23, 15, 'light');
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (34, 29, 'dark');
+
 
 CREATE TABLE rack
 (
@@ -69,6 +89,8 @@ CREATE TABLE rack
 );
 
 INSERT INTO rack VALUE (1, 100, 0, 1);
+INSERT INTO rack VALUE (2, 10, 0, 1);
+
 
 CREATE TABLE genotype
 (
@@ -92,6 +114,7 @@ CREATE TABLE cage
 
 INSERT INTO cage VALUE(1, "test", 'Active', 1, 2, FALSE);
 INSERT INTO cage VALUE(2, "test", 'Active', 1, 2, TRUE);
+INSERT INTO cage VALUE(3, "test", 'Active', 1, 1, FALSE);
 
 
 CREATE TABLE mouse
@@ -110,3 +133,6 @@ CREATE TABLE mouse
 
 INSERT INTO mouse VALUES (1, "test", "m", "2000-11-11", NULL, 1, 2), (2, "test", "m", "2000-11-11", NULL, 1, 2), 
 						(3, "test", "m", "2000-11-11", NULL, 1, 2), (4, "test", "m", "2000-11-11", NULL, 1, 2);
+                        
+INSERT INTO mouse VALUES (5, "test", "f", "2000-11-11", NULL, 3, 2), (6, "test", "f", "2000-11-11", NULL, 3, 2), 
+						(7, "test", "f", "2000-11-11", NULL, 3, 2), (8, "test", "f", "2000-11-11", NULL, 3, 2);                        

@@ -1,7 +1,10 @@
+import com.mysql.cj.xdevapi.SqlStatement;
+
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
 import java.util.Scanner;
 
 public class UserMenu extends UserMenuAbstract {
@@ -12,8 +15,6 @@ public class UserMenu extends UserMenuAbstract {
 		this.conn = conn;
 		scan = new Scanner(System.in);
 	}
-
-	// TODO maybe make abstract for this early stuff
 
 	@Override
 	public void menuStart(int userID) {
@@ -108,11 +109,12 @@ public class UserMenu extends UserMenuAbstract {
 					+ "1 = view Your Address\n"
 					+ "2 = view Users\n"
 					+ "3 = view Facility\n"
-					+ "4 = view Room\n"
-					+ "5 = view Rack\n"
-					+ "6 = view Cage\n"
-					+ "7 = view Mouse\n"
-					+ "8 = view Genotype\n");
+					+ "4 = view Your Facility Access\n"
+					+ "5 = view Room\n"
+					+ "6 = view Rack\n"
+					+ "7 = view Cage\n"
+					+ "8 = view Mouse\n"
+					+ "9 = view Genotype\n");
 			userInput = scan.nextLine();
 
 			switch (userInput.toLowerCase()) {
@@ -126,18 +128,21 @@ public class UserMenu extends UserMenuAbstract {
 					viewFacility();
 					break;
 				case "4":
-					viewRoom();
+					viewFacilityAccess();
 					break;
 				case "5":
-					viewRack();
+					viewRoom();
 					break;
 				case "6":
-					viewCage();
+					viewRack();
 					break;
 				case "7":
-					viewMouse();
+					viewCage();
 					break;
 				case "8":
+					viewMouse();
+					break;
+				case "9":
 					viewGenotype();
 					break;
 				case "b":
@@ -257,49 +262,130 @@ public class UserMenu extends UserMenuAbstract {
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("An error occurred while adding the rack.");
+			System.out.println("ERROR: An error occurred while adding the rack.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
-		catch (NumberFormatException nx) {
-			System.out.println("Provided values where not properly formatted as integers.");
+	}
+
+	@Override
+	public void viewFacilityAccess() {
+		try {
+			// Only allows user to see UserID, FirstName, LastName
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_facility_access(?)}");
+			callableStatement.setInt(1, userID);
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("UserId, UserName, FacilityID: FacilityName");
+
+			while (rs.next()) {
+				int uID = rs.getInt("UserID");
+				String fName = rs.getString("FirstName");
+				String lName = rs.getString("LastName");
+				int facilityID = rs.getInt("FacilityID");
+				String facilityName = rs.getString("FacilityName");
+
+				System.out.println(uID +", " + fName + " " + lName + ", " + facilityID
+					+ ": " + facilityName);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while accessing your facility access.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
 		}
 	}
 
-	// should work- if multiple use- then copy and change only this one
 	@Override
 	public void updateAddress() {
 		updateAddressHelper(userID);
 	}
 
-	// might not work
+	// TODO
 	@Override
 	public void updateCage() {
-		updateCageHelper(userID);
+		// when update to inactive - rack doesnt count against number on rack - trigger
+
 	}
 
-	// might not work
+	// TODO
 	@Override
 	public void updateMouse() {
-		updateMouseHelper(userID);
+		// need trigger for cage limit and sex
+
 	}
 
-	// should work- if multiple use- then remove from user and delete only if one user
 	@Override
 	public void deleteAddress() {
 		deleteAddressHelper(userID);
 	}
 
-	// should work - never want to delete more than 1 cage at a time
 	@Override
 	public void deleteCage() {
-		deleteCageHelper(userID);
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_cage(?, ?)}");
+			callableStatement.setInt(1, userID);
+
+			System.out.println("Please enter cageID for deletion.");
+			int cageID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(2, cageID);
+
+			callableStatement.executeUpdate();
+
+			System.out.println("Cage " + cageID +  " successfully removed from database.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete cage with animal records attached to it.");
+			}
+			else if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided value was not properly formatted as an integer.");
+		}
 	}
 
-	// works- delete only 1 mouse at time
 	@Override
 	public void deleteMouse() {
-		deleteMouseHelper(userID);
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_mouse(?, ?)}");
+			callableStatement.setInt(1, userID);
+
+			System.out.println("Please enter ear tag of mouse for deletion.");
+			int eTag = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(2, eTag);
+
+			callableStatement.executeUpdate();
+
+			System.out.println("Mouse " + eTag +  " successfully removed from database.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete record of mouse who has offspring.");
+			}
+			else if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided value was not properly formatted as an integer.");
+		}
 	}
 }
