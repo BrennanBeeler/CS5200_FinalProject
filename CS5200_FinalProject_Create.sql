@@ -27,12 +27,16 @@ CREATE TABLE `user`
 );
 
 INSERT INTO `user` VALUE (1, "password", "Billy", "Johnson", "b_johnson@domain.com", "13032021111", TRUE, NULL);
+INSERT INTO `user` VALUE (2, "test", "Joe", "White", "j_white@domain.com", "9491230303", FALSE, NULL);
+
 
 CREATE TABLE facility
 (
 	FacilityID INT PRIMARY KEY,
     FacilityName VARCHAR(50) NOT NULL
 );
+
+INSERT INTO facility VALUE (1, "Johnson Science Center");
 
 CREATE TABLE user_facility_access
 (
@@ -45,12 +49,15 @@ CREATE TABLE user_facility_access
 
 CREATE TABLE room
 (
-	RoomID INT PRIMARY KEY,
+	RoomID INT PRIMARY KEY AUTO_INCREMENT,
+	FacilityID INT NOT NULL,
     RoomNumber VARCHAR(10) NOT NULL,
     LightCycle ENUM('light', 'dark'),
-    FacilityID INT NOT NULL,
+    CONSTRAINT UNIQUE(RoomNumber, FacilityID),
     CONSTRAINT room_to_facility_fk FOREIGN KEY (FacilityID) REFERENCES facility(FacilityID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
+
+INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (1, 20, 'light');
 
 CREATE TABLE rack
 (
@@ -67,6 +74,18 @@ CREATE TABLE genotype
     GenotypeDetails VARCHAR(200) NOT NULL UNIQUE
 );
 
+CREATE TABLE cage
+(
+	CageID INT PRIMARY KEY,
+    BeddingType VARCHAR(20),
+    CageStatus ENUM('Active', 'Inactive') NOT NULL,
+    RackID INT NOT NULL,
+    Manager INT NOT NULL,
+    Breeding BOOLEAN NOT NULL,
+    CONSTRAINT cage_to_rack FOREIGN KEY (RackID) REFERENCES rack(RackID) ON UPDATE RESTRICT ON DELETE RESTRICT,
+    CONSTRAINT cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
+);
+
 CREATE TABLE mouse
 (
 	Eartag INT PRIMARY KEY,
@@ -74,60 +93,9 @@ CREATE TABLE mouse
     Sex ENUM('M', 'F') NOT NULL,
     DOB DATE NOT NULL,
     DateOfDeath DATE DEFAULT NULL,
-    NumLitters INT DEFAULT 0,
-    MaleParent INT NOT NULL,
-    FemaleParent INT NOT NULL,
-    CONSTRAINT mouse_to_genotype FOREIGN KEY (GenotypeAbr) REFERENCES genotype(GenotypeAbr) ON UPDATE RESTRICT ON DELETE RESTRICT
+    CageID INT NOT NULL,
+    OriginCage INT NOT NULL,
+    CONSTRAINT mouse_to_genotype FOREIGN KEY (GenotypeAbr) REFERENCES genotype(GenotypeAbr) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT mouse_to_cage_fk FOREIGN KEY (CageID) REFERENCES cage(CageID) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT mouse_to_origincage FOREIGN KEY (CageID) REFERENCES cage(CageID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
-
-CREATE TABLE breeding_cage
-(
-	CageID INT PRIMARY KEY,
-    BeddingType VARCHAR(20),
-    CageStatus ENUM('Active', 'Inactive') NOT NULL,
-    RackID INT NOT NULL,
-    Manager INT NOT NULL,
-    MaleID INT NOT NULL,
-    FemaleID INT NOT NULL,
-    CONSTRAINT breeding_cage_to_rack FOREIGN KEY (RackID) REFERENCES rack(RackID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT breeding_cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
-);
-
-CREATE TABLE non_breeding_cage
-(
-	CageID INT PRIMARY KEY,
-    BeddingType VARCHAR(20),
-    CageStatus ENUM('Active', 'Inactive') NOT NULL,
-    RackID INT NOT NULL,
-    Manager INT NOT NULL,
-    CONSTRAINT nonbr_cage_to_rack FOREIGN KEY (RackID) REFERENCES rack(RackID) ON UPDATE RESTRICT ON DELETE RESTRICT,
-    CONSTRAINT nonbr_cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
-);
-
-CREATE TABLE origin_cage
-(
-	Eartag INT,
-    CageID INT,
-    CONSTRAINT origin_cage_pk PRIMARY KEY (Eartag, CageID),
-    CONSTRAINT origin_cage_to_mouse_fk FOREIGN KEY (Eartag) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE CASCADE,
-    CONSTRAINT origin_cage_to_breeding_cage_fk FOREIGN KEY (CageID) REFERENCES breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE
-);
-
-CREATE TABLE cages_to_mice
-(
-	Eartag INT,
-    CageID INT,
-    CONSTRAINT cages_to_mice_pk PRIMARY KEY (Eartag, CageID),
-    CONSTRAINT cages_to_mice_to_mouse_fk FOREIGN KEY (Eartag) REFERENCES mouse(Eartag) ON UPDATE RESTRICT ON DELETE CASCADE,
-    CONSTRAINT cages_to_mice_to_breeding_cage_fk FOREIGN KEY (CageID) REFERENCES breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE,
-    CONSTRAINT cages_to_mice_to_nonbr_cage_fk FOREIGN KEY (CageID) REFERENCES non_breeding_cage(CageID) ON UPDATE RESTRICT ON DELETE CASCADE
-);
-
-
-
-
-
-
-
-
-

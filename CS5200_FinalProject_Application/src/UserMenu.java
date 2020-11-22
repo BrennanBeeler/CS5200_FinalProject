@@ -223,10 +223,10 @@ public class UserMenu extends UserMenuAbstract {
 		}
 
 		if (input.toLowerCase().compareTo("y") == 0) {
-			addBreedingCage(userID);
+			addCageHelper(userID, true);
 		}
 		else {
-			addNonBreedingCage(userID);
+			addCageHelper(userID, false);
 		}
 	}
 
@@ -235,6 +235,7 @@ public class UserMenu extends UserMenuAbstract {
 		addMouseHelper(userID);
 	}
 
+	// might not need to exist?
 	@Override
 	public void viewAddress() {
 		viewAddressHelper(userID);
@@ -266,31 +267,37 @@ public class UserMenu extends UserMenuAbstract {
 		}
 	}
 
+	// should work- if multiple use- then copy and change only this one
 	@Override
 	public void updateAddress() {
 		updateAddressHelper(userID);
 	}
 
+	// might not work
 	@Override
 	public void updateCage() {
 		updateCageHelper(userID);
 	}
 
+	// might not work
 	@Override
 	public void updateMouse() {
 		updateMouseHelper(userID);
 	}
 
+	// should work- if multiple use- then remove from user and delete only if one user
 	@Override
 	public void deleteAddress() {
 		deleteAddressHelper(userID);
 	}
 
+	// should work - never want to delete more than 1 cage at a time
 	@Override
 	public void deleteCage() {
 		deleteCageHelper(userID);
 	}
 
+	// works- delete only 1 mouse at time
 	@Override
 	public void deleteMouse() {
 		deleteMouseHelper(userID);

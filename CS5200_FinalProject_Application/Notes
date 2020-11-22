@@ -20,9 +20,11 @@ TODO: Finished
 TODO: TODO
 - Create abstract class for UserMenu and AdminMenu - create statements etc. where applicable
 - Remove filled slots from rack and instead use a trigger to determine if okay to add cage to
-a rack
+a rack- if inactive-> doesn't count
+- Show possible values before insertion
 - Make sure that each call to stored procedure is protected with catch that is appropriate
 - Add user view of facility access- but just their own
+- turn new_address into transaction
 TODO: MAYBE
 - Could switch menu to "view" and pull all communication with model to the controller class
 - Increase facility name length allowed

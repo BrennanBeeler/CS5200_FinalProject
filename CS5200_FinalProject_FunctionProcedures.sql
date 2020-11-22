@@ -122,3 +122,115 @@ BEGIN
 END //
 
 DELIMITER ;
+
+
+-- ----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS new_room;
+
+DELIMITER //
+
+CREATE PROCEDURE new_room
+(
+	IN fID INT,
+    IN rNum VARCHAR(10),
+    IN lCycle VARCHAR(5)
+)
+BEGIN
+	INSERT INTO room (FacilityID, RoomNumber, LightCycle) VALUE (fID, rNum, lCycle);
+END //
+
+DELIMITER ;
+
+-- ----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS new_rack;
+
+DELIMITER //
+
+CREATE PROCEDURE new_rack
+(
+	IN raID INT,
+    IN CageSlots INT,
+    IN rmID INT
+)
+BEGIN
+	INSERT INTO rack VALUE (raID, CageSlots, 0, rmID);
+END //
+
+DELIMITER ;
+
+-- ----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS new_cage;
+
+DELIMITER //
+
+CREATE PROCEDURE new_cage
+(
+	IN cID INT,
+    IN bType VARCHAR(20),
+    IN cStatus VARCHAR(8),
+    IN rID INT,
+    IN manID INT,
+    IN breed BOOLEAN
+)
+BEGIN
+	INSERT INTO cage VALUE (cID, bType, cStatus, rID, manID, breed);
+END //
+
+DELIMITER ;
+
+-- ----------------------------------------------------------------
+DROP PROCEDURE IF EXISTS new_mouse;
+
+DELIMITER //
+
+CREATE PROCEDURE new_mouse
+(
+	IN eTag INT,
+    IN geno VARCHAR(10),
+    IN sx VARCHAR(1),
+    IN dob DATE,
+    IN dod DATE,
+    IN cID INT,
+    IN originID INT,
+    IN manID INT
+)
+BEGIN
+	IF (EXISTS (SELECT CageID FROM cage WHERE ManagerID = manID AND CageID = cID))
+	&& ((originID && cID) IN (SELECT CageID FROM cage)) AND cID != originID THEN
+		INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+	END IF;
+
+	
+END //
+
+DELIMITER ;
+
+-- ------------------------------------------------------------------------
+-- DROP TRIGGER IF EXISTS insert_mouse_cage_limit;
+
+-- DELIMITER //
+
+-- CREATE TRIGGER mouse_cage_limit
+-- 	BEFORE INSERT ON mouse
+--     FOR EACH ROW
+-- BEGIN
+-- 	CASE 
+-- 		WHEN EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = TRUE AND c.CageID = NEW.CageID) THEN 
+-- 			IF (SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5 THEN
+-- 				SIGNAL SQLSTATE '45000'
+-- 					SET MESSAGE_TEXT = "Cannot house more than 5 mice in a cage.";
+-- 			END IF;
+-- 		ELSE 
+-- 			IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'M') >= 1 THEN
+-- 				SIGNAL SQLSTATE '45000'
+-- 					SET MESSAGE_TEXT = "Already a male breeder in this cage.";
+-- 			ELSE IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'F') >= 1 THEN
+-- 				SIGNAL SQLSTATE '45000'
+-- 					SET MESSAGE_TEXT = "Already a female breeder in this cage.";
+-- 			END IF;
+-- 		END IF;
+-- 		
+-- 	END CASE;
+-- END //
+-- DELIMITER ;
+
