@@ -30,6 +30,7 @@ CREATE TABLE `user`
 
 INSERT INTO `user` VALUE (1, "password", "Billy", "Johnson", "b_johnson@domain.com", "13032021111", TRUE, 1);
 INSERT INTO `user` VALUE (2, "test", "Joe", "White", "j_white@domain.com", "9491230303", FALSE, 1);
+INSERT INTO `user` VALUE (3, "test", "test", "test", "test", "test", FALSE, 1);
 
 
 CREATE TABLE facility
@@ -135,4 +136,7 @@ INSERT INTO mouse VALUES (1, "test", "m", "2000-11-11", NULL, 1, 2), (2, "test",
 						(3, "test", "m", "2000-11-11", NULL, 1, 2), (4, "test", "m", "2000-11-11", NULL, 1, 2);
                         
 INSERT INTO mouse VALUES (5, "test", "f", "2000-11-11", NULL, 3, 2), (6, "test", "f", "2000-11-11", NULL, 3, 2), 
-						(7, "test", "f", "2000-11-11", NULL, 3, 2), (8, "test", "f", "2000-11-11", NULL, 3, 2);                        
+						(7, "test", "f", "2000-11-11", NULL, 3, 2), (8, "test", "f", "2000-11-11", NULL, 3, 2);           
+                        
+                        
+                        

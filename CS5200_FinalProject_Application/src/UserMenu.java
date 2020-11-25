@@ -60,7 +60,7 @@ public class UserMenu extends UserMenuAbstract {
 			System.out.println("\nType the number of the menu option you would like. Type b to go "
 					+ "back to the previous menu.");
 			System.out.println("Add Menu:\n"
-					+ "1 = add new Your Address\n"
+					+ "1 = add your new Address\n"
 					+ "2 = add new Facility\n"
 					+ "3 = add new Room\n"
 					+ "4 = add new Rack\n"
@@ -307,14 +307,14 @@ public class UserMenu extends UserMenuAbstract {
 	// TODO
 	@Override
 	public void updateCage() {
-		// when update to inactive - rack doesnt count against number on rack - trigger
+
 
 	}
 
 	// TODO
 	@Override
 	public void updateMouse() {
-		// need trigger for cage limit and sex
+		//
 
 	}
 

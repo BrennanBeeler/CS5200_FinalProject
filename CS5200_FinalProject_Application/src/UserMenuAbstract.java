@@ -37,6 +37,7 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			System.out.println("Address successfully added to UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
+			// TODO protect against invalid UserID?
 			System.out.println("ERROR: An error occurred while adding the address.");
 		}
 	}
@@ -177,10 +178,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while adding the cage.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding the cage.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 		catch (NumberFormatException nx) {
 			System.out.println("ERROR: Provided values where not properly formatted as integers.");
@@ -359,7 +365,25 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 	// TODO
 	@Override
 	public void viewRoom() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_facility()}");
 
+			ResultSet rs = callableStatement.executeQuery();
+
+			while (rs.next()) {
+				int fID = rs.getInt("FacilityID");
+				String facilityName = rs.getString("FacilityName");
+				int roomCount = rs.getInt("roomCount");
+				System.out.println(fID + ": " + facilityName + ", # rooms: " + roomCount);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing facilities.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
 	// TODO
@@ -375,9 +399,59 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 	}
 
 	// TODO
+	private void viewMouse_Menu() {
+//		while (userInput.toLowerCase().compareTo("b") != 0) {
+//			System.out.println("\nHow would you like to filter mouse results?");
+//			System.out.println("1 = No Filter\n"
+//					+ "2 = By User\n"
+//					+ "3 = By Genotype\n"
+//					+ "4 = By Room\n"
+//					+ "5 = add new Cage\n"
+//					+ "6 = add new Mouse\n"
+//					+ "7 = add new Genotype\n");
+//			userInput = scan.nextLine();
+//
+//			switch (userInput.toLowerCase()) {
+//				case "1":
+//					addAddress();
+//					break;
+//				case "2":
+//					addFacility();
+//					break;
+//				case "3":
+//					addRoom();
+//					break;
+//				case "4":
+//					addRack();
+//					break;
+//				case "5":
+//					addCage();
+//					break;
+//				case "6":
+//					addMouse();
+//					break;
+//				case "7":
+//					addGenotype();
+//					break;
+//				case "b":
+//					break;
+//				default:
+//					System.out.println("Command not recognized.");
+//			}
+//		}
+
+	}
+
+	// TODO
 	@Override
 	public void viewMouse() {
+		// view all mice
 
+		// view all mice per facility
+
+		// view all mice per room
+		// view cage with all mice in it
+		viewMouse_Menu();
 	}
 
 	@Override
@@ -440,7 +514,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 	// Needs to delete address if user is only person there, else remove the address from that user
 	protected void deleteAddressHelper(int userID) {
 		try {
-			// Only allows user to see UserID, FirstName, LastName
 			CallableStatement callableStatement =
 					conn.prepareCall("{CALL delete_address(?)}");
 			callableStatement.setInt(1, userID);

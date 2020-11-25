@@ -256,6 +256,73 @@ BEGIN
 END //
 DELIMITER ;
 
+
+-- ------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS update_mouse_cage_limit;
+
+DELIMITER //
+
+CREATE TRIGGER update_mouse_cage_limit
+	BEFORE UPDATE ON mouse
+    FOR EACH ROW
+BEGIN 
+	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
+		IF (SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot house more than 5 mice in a cage.";
+		END IF;
+	ELSE 
+		IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'M' AND NEW.CageID = m2.CageID) >= 1 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Already a male breeder in this cage.";
+		ELSEIF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'F' AND NEW.CageID = m2.CageID) >= 1 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Already a female breeder in this cage.";
+		END IF;
+	END IF;
+		
+END //
+DELIMITER ;
+
+-- ------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS insert_mouse_sex_restrict;
+
+DELIMITER //
+
+CREATE TRIGGER insert_mouse_sex_restrict
+	BEFORE UPDATE ON mouse
+    FOR EACH ROW
+BEGIN 
+	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
+		IF (NEW.sex NOT IN (SELECT DISTINCT sex FROM cage WHERE CageID = NEW.CageID) >= 5) THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot house male and female mice together in non-breeding cage.";
+		END IF;
+	END IF;
+		
+END //
+DELIMITER ;
+
+-- ------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS update_mouse_sex_restrict;
+
+DELIMITER //
+
+CREATE TRIGGER update_mouse_sex_restrict
+	BEFORE UPDATE ON mouse
+    FOR EACH ROW
+BEGIN 
+	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
+		IF (NEW.sex NOT IN (SELECT DISTINCT sex FROM cage WHERE CageID = NEW.CageID) >= 5) THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot house male and female mice together in non-breeding cage.";
+		END IF;
+	END IF;
+		
+END //
+DELIMITER ;
+
+
 -- ----------------------------------------------------------------
 DROP PROCEDURE IF EXISTS new_genotype;
 
@@ -371,7 +438,7 @@ CREATE PROCEDURE view_facility_access
 	IN uID INT
 )
 BEGIN
-	IF (uID = NULL) THEN
+	IF (uID IS NULL) THEN
 		SELECT uf.UserID, u.FirstName, u.LastName, uf.FacilityID, f.FacilityName 
         FROM user_facility_access AS uf 
         INNER JOIN `user` AS u
@@ -456,33 +523,116 @@ DELIMITER ;
 
 -- --------------------------------------------------------------
 
-DROP PROCEDURE IF EXISTS delete_mouse;
+DROP PROCEDURE IF EXISTS initialize_rack_filled;
 
 DELIMITER //
 
-CREATE PROCEDURE delete_mouse
-(
-	IN uID INT,
-    IN eTag INT
-)
+CREATE PROCEDURE initialize_rack_filled
+()
 BEGIN
-	IF (uid) IS NULL THEN
-		DELETE FROM mouse WHERE Eartag = eTag; -- -------------------- TODO test this part
-	ELSE 
-		IF eTag IN (SELECT Eartag FROM mouse AS m LEFT OUTER JOIN cage AS c ON m.CageID = c.CageID WHERE c.Manager = uID) THEN
-			DELETE FROM mouse WHERE Eartag = eTag;
-		ELSEIF eTag IN (SELECT Eartag FROM mouse) THEN
-			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "ERROR: Cannot delete record of mouse that you do not manage.";
-		ELSE 
-			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "ERROR: Cannot delete record of mouse that does not exist.";
-		END IF;
-    END IF;
+	UPDATE rack AS r SET FilledSlots = (SELECT COUNT(*) FROM cage AS c WHERE r.RackID = c.RackID AND c.CageStatus = 'Active');
 END //
 
 DELIMITER ;
 
+
+CALL initialize_rack_filled(); -- TODO: call somewhere else ------------------------------------------------------------------------------------------------------
+
+
+
+-- ------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS insert_cage_trigger;
+
+DELIMITER //
+
+CREATE TRIGGER insert_cage_trigger
+	BEFORE UPDATE ON cage
+    FOR EACH ROW
+BEGIN 
+	IF NEW.CageStatus = 'Active' THEN 
+		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID AND c.CageStatus = 'Active') <= 0 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot put new cage onto full rack.";
+		ELSE
+			UPDATE rack AS r1 SET FilledSlots = ((SELECT FilledSlots FROM rack AS r2 WHERE r2.RackID = NEW.RackID) + 1) 
+				WHERE r1.RackID = NEW.RackID;
+		END IF;
+	END IF;
+END //
+DELIMITER ;
+
+-- ------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS update_cage_trigger;
+
+DELIMITER //
+
+CREATE TRIGGER update_cage_trigger
+	BEFORE UPDATE ON cage
+    FOR EACH ROW
+BEGIN 
+	IF NEW.CageStatus = 'Active' THEN 
+		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID AND c.CageStatus = 'Active') <= 0 THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot put new cage onto full rack.";
+		ELSE
+			UPDATE rack AS r1 SET FilledSlots = ((SELECT FilledSlots FROM rack AS r2 WHERE r2.RackID = NEW.RackID) + 1) 
+				WHERE r1.RackID = NEW.RackID;
+		END IF;
+	END IF;
+END //
+DELIMITER ;
+
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS add_facility_access;
+
+DELIMITER //
+
+CREATE PROCEDURE add_facility_access
+(
+	IN uID INT,
+    IN fac VARCHAR(50)
+)
+BEGIN
+	INSERT INTO user_facility_access VALUE(uID, fac);
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_user;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_user
+(
+	IN uID INT
+)
+BEGIN
+	CALL delete_address(uID);
+	DELETE FROM `user` WHERE UserID = uID;
+END //
+
+DELIMITER ;
+
+
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_facility_access;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_facility_access
+(
+	IN uID INT,
+    IN facID INT
+)
+BEGIN
+	DELETE FROM user_facility_access WHERE UserID = uID AND FacilityID = fac;
+END //
+
+DELIMITER ;
 
 
 

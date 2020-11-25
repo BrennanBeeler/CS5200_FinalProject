@@ -29,6 +29,11 @@ a rack- if inactive-> doesn't count
 - keep males and females separate
 - add descriptions of data order
 - go through all stored procedures and make sure to check comments
+- test cage number triggers
+- test sex triggers
+- remove checks to see return type of execute etc.
+- test everything
+- look to make transactions- delete_address etc.
 
 
 TODO: MAYBE
