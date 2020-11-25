@@ -61,29 +61,33 @@ CREATE PROCEDURE new_address
 )
 BEGIN
 	DECLARE pk_adr INT;
-    DECLARE temp INT;
     
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
 		BEGIN
 			ROLLBACK;
+            RESIGNAL;
 		END;
         
-	START TRANSACTION;
+    IF (SELECT Address FROM `user` WHERE UserID = user_id) IS NULL THEN
     
-    -- Determine if the exact address already exists in the table
-    SELECT COUNT(*) INTO temp FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
-    
-    -- if exists then get its primary key and assign it to the new user - ie shared housing
-    IF (temp > 0) THEN
-		SELECT AddressIndex INTO pk_adr FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
-    ELSE
-    	INSERT INTO address (Street, City, State, Zip) VALUE (user_straddress, user_city, user_state, user_zip);
-		SELECT AddressIndex INTO pk_adr FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
-	END IF;
-    
-    UPDATE `user` SET Address = pk_adr WHERE UserID = user_id;
-    
-    COMMIT;
+		START TRANSACTION;
+        
+		-- if exists then get its primary key and assign it to the new user - ie shared housing
+		IF ((SELECT COUNT(*) FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip) > 0) THEN
+			SELECT AddressIndex INTO pk_adr FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
+		ELSE
+			INSERT INTO address (Street, City, State, Zip) VALUE (user_straddress, user_city, user_state, user_zip);
+			SELECT AddressIndex INTO pk_adr FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
+		END IF;
+		
+		UPDATE `user` SET Address = pk_adr WHERE UserID = user_id;
+		
+		COMMIT;
+        
+	ELSE 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: This user already has an address.";
+    END IF;
 END //
 
 DELIMITER ;
@@ -203,13 +207,7 @@ CREATE PROCEDURE new_mouse
     IN originID INT,
     IN manID INT
 )
-BEGIN
-	-- IF (EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID))
--- 	AND ((originID AND cID) IN (SELECT CageID FROM cage)) AND cID != originID THEN
--- 		INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
--- 	END IF;
-
-		
+BEGIN	
 	
 IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
 	SIGNAL SQLSTATE '45000'

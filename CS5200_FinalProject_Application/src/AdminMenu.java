@@ -14,7 +14,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 	@Override
 	public void menuStart(int userID) {
-		// TODO figure out
+		// TODO figure out what do about userID on admin
 		// this.userID = userID;
 
 
@@ -497,10 +497,17 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 	}
 
-	// TODO
 	@Override
 	public void updateAddress() {
+		try {
+			System.out.println("Please enter UserID whose address should be updated.");
+			int uID = Integer.parseInt(scan.nextLine());
 
+			updateAddressHelper(uID);
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: UserID not formatted as integer.");
+		}
 	}
 
 	// TODO
@@ -523,7 +530,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 			deleteAddressHelper(uID);
 		}
-
 		catch (NumberFormatException ex) {
 			System.out.println("ERROR: UserID not formatted as integer.");
 		}

@@ -37,8 +37,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			System.out.println("Address successfully added to UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
-			// TODO protect against invalid UserID?
-			System.out.println("ERROR: An error occurred while adding the address.");
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding the address.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 	}
 
@@ -398,7 +405,7 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 	}
 
-	// TODO
+	// TODO - figure out what to do with viewing stuff
 	private void viewMouse_Menu() {
 //		while (userInput.toLowerCase().compareTo("b") != 0) {
 //			System.out.println("\nHow would you like to filter mouse results?");
