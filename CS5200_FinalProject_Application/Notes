@@ -34,6 +34,7 @@ a rack- if inactive-> doesn't count
 - remove checks to see return type of execute etc.
 - test everything
 - look to make transactions- delete_address etc.
+- make sure on deletion that it checks if something exists
 
 
 TODO: MAYBE

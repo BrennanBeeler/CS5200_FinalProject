@@ -1,5 +1,3 @@
-import com.mysql.cj.xdevapi.SqlStatement;
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;

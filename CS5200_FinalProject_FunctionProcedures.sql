@@ -478,8 +478,13 @@ BEGIN
         
 	START TRANSACTION;
     
-	SELECT Address INTO adrID FROM `user` WHERE UserID = uID;
-    
+    IF (SELECT Address FROM `user` WHERE UserID = uID) IS NOT NULL THEN 
+		SELECT Address INTO adrID FROM `user` WHERE UserID = uID;
+	ELSE 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: User doesn't exist/doesn't have an address on file.";
+    END IF;
+	
     IF (SELECT COUNT(*) FROM `user` WHERE adrID = Address) > 1 THEN
 		-- Multiple people at address
         UPDATE `user` SET Address = NULL WHERE UserID = uID; 
@@ -608,8 +613,13 @@ CREATE PROCEDURE delete_user
 	IN uID INT
 )
 BEGIN
-	CALL delete_address(uID);
-	DELETE FROM `user` WHERE UserID = uID;
+	IF EXISTS (SELECT * FROM `user` WHERE UserID = uID) THEN
+		CALL delete_address(uID);
+		DELETE FROM `user` WHERE UserID = uID;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: User does not exist.";
+    END IF;
 END //
 
 DELIMITER ;
@@ -627,7 +637,34 @@ CREATE PROCEDURE delete_facility_access
     IN facID INT
 )
 BEGIN
-	DELETE FROM user_facility_access WHERE UserID = uID AND FacilityID = fac;
+	IF EXISTS (SELECT * FROM user_facility_access WHERE UserID = uID AND FacilityID = facID) THEN
+		DELETE FROM user_facility_access WHERE UserID = uID AND FacilityID = facID;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: No access to remove.";
+    END IF;
+	
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_facility;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_facility
+(
+	IN facID INT
+)
+BEGIN
+	IF EXISTS (SELECT * FROM facility WHERE FacilityID = facID) THEN
+		DELETE FROM facility WHERE FacilityID = facID;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: There is no facility associated with that ID.";
+    END IF;
 END //
 
 DELIMITER ;

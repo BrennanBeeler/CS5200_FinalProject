@@ -110,7 +110,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			System.out.println("\nType the number of the menu option you would like. Type b to go "
 					+ "back to the previous menu.");
 			System.out.println("View Menu:\n"
-					+ "1 = view Address\n" // TODO maybe remove- not really needed
+					+ "1 = view Address\n"
 					+ "2 = view Users\n"
 					+ "3 = view Facility\n"
 					+ "4 = view Facility Access\n"
@@ -217,7 +217,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 					+ "1 = delete Address\n"
 					+ "2 = delete Users\n"
 					+ "3 = delete Facility\n"
-					+ "4 = delete Facility Access"
+					+ "4 = delete Facility Access\n"
 					+ "5 = delete Room\n"
 					+ "6 = delete Rack\n"
 					+ "7 = delete Cage\n"
@@ -351,83 +351,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 	}
 
-	@Override
-	public void deleteFacilityAccess() {
-		try {
-			CallableStatement callableStatement =
-					conn.prepareCall("{CALL delete_facility_access(?, ?)}");
-			System.out.println("Please enter UserID for facility access removal.");
-			int uID = Integer.parseInt(scan.nextLine());
-			callableStatement.setInt(1, uID);
-
-			System.out.println("Please enter facility ID from which access should be removed.");
-			int facID = Integer.parseInt(scan.nextLine());
-			callableStatement.setInt(2, facID);
-
-			callableStatement.execute();
-
-			System.out.println("Facility access successfully removed.");
-		}
-		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while removing facility access.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
-		}
-		catch (NumberFormatException ex) {
-			System.out.println("ERROR: UserID not formatted as integer.");
-		}
-	}
-
-	@Override
-	public void deleteUser() {
-		try {
-			CallableStatement callableStatement =
-					conn.prepareCall("{CALL delete_user(?)}");
-			System.out.println("Please enter UserID for deletion.");
-			int uID = Integer.parseInt(scan.nextLine());
-			callableStatement.setInt(1, uID);
-
-			callableStatement.execute();
-
-			System.out.println("User successfully deleted.");
-
-			deleteAddressHelper(uID);
-		}
-		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while deleting user.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
-		}
-		catch (NumberFormatException ex) {
-			System.out.println("ERROR: UserID not formatted as integer.");
-		}
-	}
-
-	// TODO
-	@Override
-	public void deleteFacility() {
-
-	}
-
-	// TODO
-	@Override
-	public void deleteRoom() {
-
-	}
-
-	// TODO
-	@Override
-	public void deleteRack() {
-
-	}
-
-	// TODO
-	@Override
-	public void deleteGenotype() {
-
-	}
 
 	@Override
 	public void addAddress() {
@@ -441,22 +364,42 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 	}
 
-	// TODO
 	@Override
 	public void addCage() {
+		try {
+			String input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Is the cage a breeding-cage? (y/n)");
+				input = scan.nextLine();
+			}
 
+			boolean breed = input.toLowerCase().compareTo("y") == 0;
+
+			System.out.println("What UserID is the cage managed by?");
+			int manID = Integer.parseInt(scan.nextLine());
+			addCageHelper(manID, breed);
+		}
+		catch (NumberFormatException e) {
+			System.out.println("Entered UserID was not in integer format.");
+		}
 	}
 
 	// TODO
 	@Override
 	public void addMouse() {
-
 	}
 
-	// TODO
 	@Override
 	public void viewAddress() {
-
+		System.out.println("Please enter userID of address?");
+		try {
+			int input = Integer.parseInt(scan.nextLine());
+			viewAddressHelper(input);
+		}
+		catch (NumberFormatException e) {
+			System.out.println("Entered UserID was not in integer format.");
+		}
 	}
 
 	@Override
@@ -533,6 +476,117 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (NumberFormatException ex) {
 			System.out.println("ERROR: UserID not formatted as integer.");
 		}
+	}
+
+	@Override
+	public void deleteFacilityAccess() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_facility_access(?, ?)}");
+			System.out.println("Please enter UserID for facility access removal.");
+			int uID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, uID);
+
+			System.out.println("Please enter facility ID from which access should be removed.");
+			int facID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(2, facID);
+
+			callableStatement.execute();
+
+			System.out.println("Facility access successfully removed.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while removing facility access.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: UserID not formatted as integer.");
+		}
+	}
+
+	// TODO double check
+	@Override
+	public void deleteUser() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_user(?)}");
+			System.out.println("Please enter UserID for deletion.");
+			int uID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, uID);
+
+			callableStatement.execute();
+
+			System.out.println("User successfully deleted.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while deleting user.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: UserID not formatted as integer.");
+		}
+	}
+
+	@Override
+	public void deleteFacility() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_facility(?)}");
+			System.out.println("Please enter facilityID for deletion.");
+			int facilityID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, facilityID);
+
+			callableStatement.execute();
+
+			System.out.println("Facility successfully deleted.");
+
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while deleting user.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: UserID not formatted as integer.");
+		}
+	}
+
+	// TODO
+	@Override
+	public void deleteRoom() {
+
+	}
+
+	// TODO
+	@Override
+	public void deleteRack() {
+
+	}
+
+	// TODO
+	@Override
+	public void deleteGenotype() {
+
 	}
 
 	// TODO

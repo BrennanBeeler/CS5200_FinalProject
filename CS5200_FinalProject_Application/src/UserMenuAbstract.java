@@ -530,10 +530,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			System.out.println("\nAddress successfully deleted for UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while deleting address.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while deleting address.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 	}
 }
