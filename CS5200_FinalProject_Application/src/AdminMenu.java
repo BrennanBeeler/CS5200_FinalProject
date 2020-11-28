@@ -511,7 +511,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 	}
 
-	// TODO double check
 	@Override
 	public void deleteUser() {
 		try {
@@ -537,7 +536,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 		}
 		catch (NumberFormatException ex) {
-			System.out.println("ERROR: UserID not formatted as integer.");
+			System.out.println("ERROR: User ID not formatted as integer.");
 		}
 	}
 
@@ -560,44 +559,168 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 				System.out.println(e.getMessage());
 			}
 			else {
-				System.out.println("ERROR: An error occurred while deleting user.");
+				System.out.println("ERROR: An error occurred while deleting facility.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
 				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
-			System.out.println("ERROR: UserID not formatted as integer.");
+			System.out.println("ERROR: Facility ID not formatted as integer.");
 		}
 	}
 
-	// TODO
 	@Override
 	public void deleteRoom() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_room(?)}");
+			System.out.println("Please enter roomID for deletion.");
+			int roomID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, roomID);
 
+			callableStatement.execute();
+
+			System.out.println("Room successfully deleted.");
+
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while deleting room.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: Room ID not formatted as integer.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void deleteRack() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_rack(?)}");
+			System.out.println("Please enter rack ID for deletion.");
+			int rackID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, rackID);
 
+			callableStatement.execute();
+
+			System.out.println("Rack successfully deleted.");
+
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while deleting rack.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: Rack ID not formatted as integer.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void deleteGenotype() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_genotype(?)}");
+			System.out.println("Please enter genotype abbreviation for deletion.");
+			String geno = scan.nextLine();
+			callableStatement.setString(1, geno);
 
+			callableStatement.execute();
+
+			System.out.println("Genotype successfully deleted.");
+
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while deleting genotype.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
 	}
 
-	// TODO
 	@Override
 	public void deleteCage() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_cage(?, ?)}");
+			callableStatement.setNull(1, Types.INTEGER);
 
+			System.out.println("Please enter cageID for deletion.");
+			int cageID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(2, cageID);
+
+			callableStatement.executeUpdate();
+
+			System.out.println("Cage " + cageID +  " successfully removed from database.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete cage with animal records attached to it.");
+			}
+			else if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided value was not properly formatted as an integer.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void deleteMouse() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL delete_mouse(?, ?)}");
+			callableStatement.setNull(1, Types.INTEGER);
 
+			System.out.println("Please enter ear tag of mouse for deletion.");
+			int eTag = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(2, eTag);
+
+
+			callableStatement.executeUpdate();
+
+			System.out.println("Mouse " + eTag +  " successfully removed from database.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete record of mouse who has offspring.");
+			}
+			else if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided value was not properly formatted as an integer.");
+		}
 	}
 }

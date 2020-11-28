@@ -511,7 +511,7 @@ CREATE PROCEDURE delete_cage
 )
 BEGIN
 	IF (uid) IS NULL THEN
-		DELETE FROM cage WHERE CageID = cID; -- -------------------- TODO test this part
+		DELETE FROM cage WHERE CageID = cID;
 	ELSE 
 		IF cID IN (SELECT CageID FROM cage WHERE Manager = uID) THEN
 			DELETE FROM cage WHERE CageID = cID;
@@ -670,4 +670,94 @@ END //
 DELIMITER ;
 
 
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_room;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_room
+(
+	IN rmID INT
+)
+BEGIN
+	IF EXISTS (SELECT * FROM room WHERE RoomID = rmID) THEN
+		DELETE FROM room WHERE RoomID = rmID;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: There is no room associated with that ID.";
+    END IF;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_rack;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_rack
+(
+	IN rkID INT
+)
+BEGIN
+	IF EXISTS (SELECT * FROM rack WHERE RackID = rkID) THEN
+		DELETE FROM rack WHERE RackID = rkID;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: There is no rack associated with that ID.";
+    END IF;
+END //
+
+DELIMITER ;
+
+
+-- --------------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_genotype;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_genotype
+(
+	IN geno VARCHAR(10)
+)
+BEGIN
+	IF EXISTS (SELECT * FROM genotype WHERE GenotypeAbr = geno) THEN
+		DELETE FROM genotype WHERE GenotypeAbr = geno;
+	ELSE
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: There is no genotype with that abbreviation";
+    END IF;
+END //
+
+DELIMITER ;
+
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS delete_mouse;
+
+DELIMITER //
+
+CREATE PROCEDURE delete_mouse
+(
+	IN uID INT,
+    IN eTag INT
+)
+BEGIN
+	IF (uid) IS NULL THEN
+		DELETE FROM mouse WHERE Eartag = eTag;
+	ELSE 
+		IF eTag IN (SELECT Eartag FROM mouse AS m WHERE m.CageID IN (SELECT CageID FROM cage WHERE Manager = uID)) THEN
+			DELETE FROM mouse WHERE Eartag = eTag;
+		ELSE 
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot delete mouse that you do not manage.";
+		END IF;
+    END IF;
+END //
+
+DELIMITER ;
 
