@@ -3,6 +3,8 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Scanner;
 
 public class UserMenu extends UserMenuAbstract {
@@ -302,18 +304,149 @@ public class UserMenu extends UserMenuAbstract {
 		updateAddressHelper(userID);
 	}
 
-	// TODO
 	@Override
 	public void updateCage() {
+		try {
+			String input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Sacrificed cage? (y/n)");
+				input = scan.nextLine();
+			}
 
+			if (input.toLowerCase().compareTo("y") == 0) {
+				CallableStatement callableStatement =
+						conn.prepareCall("{CALL deactivate_cage(?, ?)}");
+				callableStatement.setInt(1, userID);
 
+				System.out.println("Please enter sacrificed cageID.");
+				int cageID = Integer.parseInt(scan.nextLine());
+				callableStatement.setInt(2, cageID);
+
+				callableStatement.execute();
+
+				System.out.println("SUCCESS: Cage updated to inactive and mice marked.");
+			}
+			else {
+				CallableStatement callableStatement =
+						conn.prepareCall("{CALL update_cage(?, ?, ?, ?, ?, ?)}");
+
+				System.out.println("Please enter cageID to be updated.");
+				int cageID = Integer.parseInt(scan.nextLine());
+				callableStatement.setInt(1, cageID);
+
+				System.out.println("Please enter bedding type.");
+				String bedding = scan.nextLine();
+				callableStatement.setString(2, bedding);
+
+				System.out.println("Please enter cageStatus.(active/inactive)");
+				String actCage = scan.nextLine();
+				callableStatement.setString(3, actCage);
+
+				System.out.println("Please enter rackID where cage is housed.");
+				int rackID = Integer.parseInt(scan.nextLine());
+				callableStatement.setInt(4, rackID);
+
+				callableStatement.setInt(5, userID);
+
+				input = "";
+				while (input.toLowerCase().compareTo("y") != 0
+						&& input.toLowerCase().compareTo("n") != 0) {
+					System.out.println("Change manager of cage? (y/n)");
+					input = scan.nextLine();
+				}
+
+				// Determine if a change in manager needs to occur
+				if (input.toLowerCase().compareTo("y") == 0) {
+					System.out.println("Please enter new manager ID.");
+					int manID = Integer.parseInt(scan.nextLine());
+					callableStatement.setInt(6, manID);
+				}
+				else {
+					callableStatement.setNull(6, Types.INTEGER);
+				}
+
+				callableStatement.execute();
+
+				System.out.println("SUCCESS: Cage updated.");
+			}
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			} else {
+				System.out.println("ERROR: An error occurred while adding the cage.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void updateMouse() {
-		//
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_mouse(?, ?, ?, ?, ?)}");
 
+			System.out.println("Please enter ear tag to be updated.");
+			int eTag = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, eTag);
+
+			System.out.println("Please enter genotype.");
+			String genotype = scan.nextLine();
+			callableStatement.setString(2, genotype);
+
+			String input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Mouse deceased? (y/n)");
+				input = scan.nextLine();
+			}
+
+			if (input.toLowerCase().compareTo("y") == 0) {
+				System.out.println("Please enter date of death.(mm-dd-yyyy)");
+				String dod = scan.nextLine();
+				// get date from string and store in SimpleDateFormat
+				SimpleDateFormat smp_dod = new SimpleDateFormat("MM-dd-yyyy");
+				// translate from smp_date to util to sql
+				java.util.Date util_dod = smp_dod.parse(dod);
+				java.sql.Date sql_dod = new java.sql.Date(util_dod.getTime());
+				callableStatement.setDate(3, sql_dod);
+			}
+			else {
+				callableStatement.setNull(3, Types.DATE);
+			}
+
+			System.out.println("Please enter cageID where mouse is housed.");
+			int cageID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(4, cageID);
+
+			callableStatement.setInt(5, userID);
+
+			callableStatement.execute();
+
+			System.out.println("SUCCESS: Mouse updated.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			} else {
+				System.out.println("ERROR: An error occurred while adding the cage.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
+		}
+		catch (ParseException e) {
+			System.out.println("ERROR: Incorrect date formatting.");
+		}
 	}
 
 	@Override

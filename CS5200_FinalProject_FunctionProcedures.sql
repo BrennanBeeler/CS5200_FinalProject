@@ -207,19 +207,26 @@ CREATE PROCEDURE new_mouse
     IN originID INT,
     IN manID INT
 )
-BEGIN	
-	
-IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
-	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage of another user."; -- make sure not causing admin to see this
-ELSEIF (cID) NOT IN (SELECT CageID FROM cage) THEN
-	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage that doens't exist.";
+BEGIN
+
+
+IF (cID) NOT IN (SELECT CageID FROM cage) THEN
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage that doens't exist.";
 ELSEIF (cID != originID ) THEN
-	SIGNAL SQLSTATE '45000'
-		SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
-ELSE
-	INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
+ELSE 
+	IF manID IS NOT NULL THEN
+		IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage of another user.";
+		ELSE
+			INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+		END IF;
+	ELSE 
+		INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+	END IF;
 END IF;
 
 	
@@ -232,6 +239,7 @@ DROP TRIGGER IF EXISTS insert_mouse_cage_limit;
 
 DELIMITER //
 
+-- Designed to keep only 1 male and 1 female to a breeding cage, and only 5 mice to non-breeding cage
 CREATE TRIGGER insert_mouse_cage_limit
 	BEFORE INSERT ON mouse
     FOR EACH ROW
@@ -260,6 +268,7 @@ DROP TRIGGER IF EXISTS update_mouse_cage_limit;
 
 DELIMITER //
 
+-- Designed to keep only 1 male and 1 female to a breeding cage, and only 5 mice to non-breeding cage
 CREATE TRIGGER update_mouse_cage_limit
 	BEFORE UPDATE ON mouse
     FOR EACH ROW
@@ -288,11 +297,11 @@ DROP TRIGGER IF EXISTS insert_mouse_sex_restrict;
 DELIMITER //
 
 CREATE TRIGGER insert_mouse_sex_restrict
-	BEFORE UPDATE ON mouse
+	BEFORE INSERT ON mouse
     FOR EACH ROW
 BEGIN 
 	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
-		IF (NEW.sex NOT IN (SELECT DISTINCT sex FROM cage WHERE CageID = NEW.CageID) >= 5) THEN
+		IF (NEW.sex NOT IN (SELECT DISTINCT Sex FROM mouse WHERE CageID = NEW.CageID)) THEN
 			SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot house male and female mice together in non-breeding cage.";
 		END IF;
@@ -311,7 +320,7 @@ CREATE TRIGGER update_mouse_sex_restrict
     FOR EACH ROW
 BEGIN 
 	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
-		IF (NEW.sex NOT IN (SELECT DISTINCT sex FROM cage WHERE CageID = NEW.CageID) >= 5) THEN
+		IF (NEW.sex NOT IN (SELECT DISTINCT Sex FROM mouse WHERE CageID = NEW.CageID)) THEN
 			SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot house male and female mice together in non-breeding cage.";
 		END IF;
@@ -549,16 +558,18 @@ DROP TRIGGER IF EXISTS insert_cage_trigger;
 DELIMITER //
 
 CREATE TRIGGER insert_cage_trigger
-	BEFORE UPDATE ON cage
+	BEFORE INSERT ON cage
     FOR EACH ROW
 BEGIN 
+	DECLARE temp_fill INT;
+	
 	IF NEW.CageStatus = 'Active' THEN 
-		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID AND c.CageStatus = 'Active') <= 0 THEN
+		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID) <= 0 THEN
 			SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot put new cage onto full rack.";
 		ELSE
-			UPDATE rack AS r1 SET FilledSlots = ((SELECT FilledSlots FROM rack AS r2 WHERE r2.RackID = NEW.RackID) + 1) 
-				WHERE r1.RackID = NEW.RackID;
+			SELECT FilledSlots INTO temp_fill FROM rack WHERE RackID = NEW.RackID;
+			UPDATE rack SET FilledSlots = (temp_fill + 1) WHERE RackID = NEW.RackID;
 		END IF;
 	END IF;
 END //
@@ -573,13 +584,15 @@ CREATE TRIGGER update_cage_trigger
 	BEFORE UPDATE ON cage
     FOR EACH ROW
 BEGIN 
+	DECLARE temp_fill INT;
+
 	IF NEW.CageStatus = 'Active' THEN 
-		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID AND c.CageStatus = 'Active') <= 0 THEN
+		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID) <= 0 THEN
 			SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot put new cage onto full rack.";
 		ELSE
-			UPDATE rack AS r1 SET FilledSlots = ((SELECT FilledSlots FROM rack AS r2 WHERE r2.RackID = NEW.RackID) + 1) 
-				WHERE r1.RackID = NEW.RackID;
+			SELECT FilledSlots INTO temp_fill FROM rack WHERE RackID = NEW.RackID;
+			UPDATE rack SET FilledSlots = (temp_fill + 1) WHERE RackID = NEW.RackID;
 		END IF;
 	END IF;
 END //
@@ -761,3 +774,100 @@ END //
 
 DELIMITER ;
 
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS deactivate_cage;
+
+DELIMITER //
+
+CREATE PROCEDURE deactivate_cage
+(
+	IN uID INT,
+    IN cID INT
+)
+BEGIN
+	IF (uid) IS NULL THEN
+		UPDATE cage SET CageStatus = 'Inactive' WHERE CageID = cID;
+        UPDATE mouse SET DateOfDeath = CURRENT_DATE() WHERE CageID = cID;
+	ELSE 
+		IF cID IN (SELECT CageID FROM cage WHERE Manager = uID) THEN
+			UPDATE cage SET CageStatus = 'Inactive' WHERE CageID = cID;
+			UPDATE mouse SET DateOfDeath = CURRENT_DATE() WHERE CageID = cID;
+		ELSE 
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot update cage that you do not manage.";
+		END IF;
+    END IF;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_cage;
+
+DELIMITER //
+
+CREATE PROCEDURE update_cage
+(
+	IN cID INT,
+    IN bType VARCHAR(20),
+    IN cStatus VARCHAR(8),
+    IN rID INT,
+    IN userID INT,
+    IN manID INT
+)
+BEGIN
+	-- ADMIN
+	IF userID IS NULL THEN
+		IF manID IS NULL THEN
+			UPDATE cage SET BeddingType = bType, CageStatus = cStatus, RackID = rID WHERE CageID = cID;
+		ELSE 
+			UPDATE cage SET BeddingType = bType, CageStatus = cStatus, RackID = rID, Manager = manID WHERE CageID = cID;
+		END IF;
+	-- USER
+    ELSE 
+		IF cID IN (SELECT CageID FROM cage WHERE Manager = userID) THEN
+			IF manID IS NULL THEN
+				UPDATE cage SET BeddingType = bType, CageStatus = cStatus, RackID = rID WHERE CageID = cID;
+			ELSE 
+				UPDATE cage SET BeddingType = bType, CageStatus = cStatus, RackID = rID, Manager = manID WHERE CageID = cID;
+			END IF;
+		ELSE 
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot update cage that you do not manage.";
+		END IF;
+    END IF;	
+    
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_mouse;
+
+DELIMITER //
+
+CREATE PROCEDURE update_mouse
+(
+	IN eTag INT,
+    IN geno VARCHAR(10),
+    IN dod VARCHAR(20),
+    IN cID INT,
+    IN manID INT
+)
+BEGIN
+	IF manID IS NULL THEN
+		UPDATE mouse SET GenotypeAbr = geno, DateOfDeath = dod, CageID = cID WHERE Eartag = eTag;
+    ELSE 
+		IF cID IN (SELECT CageID FROM cage WHERE Manager = manID) THEN
+			UPDATE mouse SET GenotypeAbr = geno, DateOfDeath = dod, CageID = cID WHERE Eartag = eTag;
+		ELSE 
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot update cage that you do not manage.";
+		END IF;
+	END IF;
+END //
+
+DELIMITER ;

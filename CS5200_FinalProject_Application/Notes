@@ -35,11 +35,16 @@ a rack- if inactive-> doesn't count
 - test everything
 - look to make transactions- delete_address etc.
 - make sure on deletion that it checks if something exists - delete_cage, delete_mouse
+- for now going to keep update stuff simple- just update one at a time for both user and admin, but
+    later can decide based on time if want to branch out and allow broader changes]
+- separate manager change to its own option?
+- make sure cageID cant be origin cage on mouse update
 
 
 TODO: MAYBE
 - Increase facility name length allowed
 - cover all normal errors with customized text
+- enum will accept integer values... Fix?
 
 
 
