@@ -16,10 +16,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 	@Override
 	public void menuStart(int userID) {
-		// TODO figure out what do about userID on admin
-		// this.userID = userID;
-
-
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("q") != 0) {
@@ -323,36 +319,190 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 	}
 
-	// TODO
 	@Override
 	public void updateUser() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_user(?, ?, ?, ?, ?, ?)}");
+			System.out.println("Please enter UserID for modification.");
+			int uID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, uID);
+
+			System.out.println("Please enter first name.");
+			String fName = scan.nextLine();
+			callableStatement.setString(2, fName);
+
+			System.out.println("Please enter last name.");
+			String lName = scan.nextLine();
+			callableStatement.setString(3, lName);
+
+			System.out.println("Please enter email.");
+			String email = scan.nextLine();
+			callableStatement.setString(4, email);
+
+			System.out.println("Please enter phone number.");
+			String phone = scan.nextLine();
+			callableStatement.setString(5, phone);
+
+			String input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Give user admin access?");
+				input = scan.nextLine();
+			}
+
+			if (input.toLowerCase().compareTo("y") == 0) {
+				callableStatement.setBoolean(6, true);
+			}
+			else {
+				callableStatement.setBoolean(6, false);
+			}
+
+			callableStatement.execute();
+
+			System.out.println("User successfully updated.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while updating user.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: User ID not formatted as integer.");
+		}
 
 	}
 
-	// TODO
 	@Override
 	public void updateFacility() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_facility(?, ?)}");
+			System.out.println("Please enter Facility ID for modification.");
+			int fID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, fID);
 
+			System.out.println("Please enter new facility name.");
+			String fName = scan.nextLine();
+			callableStatement.setString(2, fName);
+
+			callableStatement.execute();
+
+			System.out.println("Facility successfully updated.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while updating facility.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: Facility ID not formatted as integer.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void updateRoom() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_room(?, ?)}");
+			System.out.println("Please enter room ID for modification.");
+			int rID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, rID);
 
+			System.out.println("Please enter light cycle.(light/dark)");
+			String cycle = scan.nextLine();
+			callableStatement.setString(2, cycle);
+
+			callableStatement.execute();
+
+			System.out.println("Room successfully updated.");
+		} catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			} else {
+				System.out.println("ERROR: An error occurred while updating room.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		} catch (NumberFormatException ex) {
+			System.out.println("ERROR: Room ID not formatted as integer.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void updateRack() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_rack(?, ?)}");
+			System.out.println("Please enter rack ID for modification.");
+			int rackID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, rackID);
 
+			System.out.println("Please enter room ID.");
+			int rID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(2, rID);
+
+			callableStatement.execute();
+
+			System.out.println("Rack successfully updated.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else {
+				System.out.println("ERROR: An error occurred while updating room.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: Room ID not formatted as integer.");
+		}
 	}
 
-	// TODO
 	@Override
 	public void updateGenotype() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL update_genotype(?, ?)}");
+			System.out.println("Please enter genotype abbreviation for modification.");
+			String genoabr = scan.nextLine();
+			callableStatement.setString(1, genoabr);
 
+			System.out.println("Please enter genotype description.");
+			String geno = scan.nextLine();
+			callableStatement.setString(2, geno);
+
+			callableStatement.execute();
+
+			System.out.println("Genotype successfully updated.");
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			} else {
+				System.out.println("ERROR: An error occurred while updating genotype.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
+		}
 	}
-
 
 	@Override
 	public void addAddress() {

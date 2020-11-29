@@ -871,3 +871,95 @@ BEGIN
 END //
 
 DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_user;
+
+DELIMITER //
+
+CREATE PROCEDURE update_user
+(
+	IN uID INT,
+    IN fname VARCHAR(25),
+    IN lname VARCHAR(25),
+    IN mail VARCHAR(40),
+    IN phone VARCHAR(11),
+    IN aFlag BOOLEAN
+)
+BEGIN
+	UPDATE `user` SET FirstName = fname, LastName = lname, Email = mail, PhoneNum = phone, AdminFlag = aFlag WHERE UserID = uID;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_facility;
+
+DELIMITER //
+
+CREATE PROCEDURE update_facility
+(
+	IN facID INT,
+    IN facName VARCHAR(50)
+)
+BEGIN
+	UPDATE facility SET FacilityName = facName WHERE FacilityID = facID;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_room;
+
+DELIMITER //
+
+CREATE PROCEDURE update_room
+(
+	IN rID INT,
+    IN cycle VARCHAR(6)
+)
+BEGIN
+	UPDATE room SET LightCycle = cycle WHERE RoomID = rID;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_rack;
+
+DELIMITER //
+
+CREATE PROCEDURE update_rack
+(
+	IN rkID INT,
+    IN rmID INT
+)
+BEGIN
+	UPDATE rack SET RoomID = rmID WHERE RackID = rkID;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS update_genotype;
+
+DELIMITER //
+
+CREATE PROCEDURE update_genotype
+(
+	IN genoabr VARCHAR(10),
+    IN genodesc VARCHAR(200)
+)
+BEGIN
+	UPDATE genotype SET GenotypeDetails = genodesc WHERE GenotypeAbr = genoabr;
+END //
+
+DELIMITER ;
+
+
+

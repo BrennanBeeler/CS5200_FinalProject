@@ -39,12 +39,17 @@ a rack- if inactive-> doesn't count
     later can decide based on time if want to branch out and allow broader changes]
 - separate manager change to its own option?
 - make sure cageID cant be origin cage on mouse update
+- cant currently change password
+- can input empty line for fields?
 
 
 TODO: MAYBE
 - Increase facility name length allowed
 - cover all normal errors with customized text
 - enum will accept integer values... Fix?
+-remove roomID? use facilityID + Room Num instead?
+- allow user to update room beyond just light
+- allow user to update primary key of tables as admin?
 
 
 
