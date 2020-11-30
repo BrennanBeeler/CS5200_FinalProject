@@ -41,6 +41,8 @@ a rack- if inactive-> doesn't count
 - make sure cageID cant be origin cage on mouse update
 - cant currently change password
 - can input empty line for fields?
+- add view single mouse
+- view mouse doesn't tell when no mice
 
 
 TODO: MAYBE
@@ -50,7 +52,10 @@ TODO: MAYBE
 -remove roomID? use facilityID + Room Num instead?
 - allow user to update room beyond just light
 - allow user to update primary key of tables as admin?
-
+- add view_full - total view of stuff
+- use https://stackoverflow.com/questions/18672643/how-to-print-a-table-of-information-in-java to
+    create pretty tables
+- maybe remove inputted values from view_mouse
 
 
 

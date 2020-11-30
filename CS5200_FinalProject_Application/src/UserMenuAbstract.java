@@ -1,5 +1,6 @@
 import java.sql.CallableStatement;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -369,95 +370,458 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 		}
 	}
 
-	// TODO
 	@Override
 	public void viewRoom() {
 		try {
 			CallableStatement callableStatement =
-					conn.prepareCall("{CALL view_facility()}");
+					conn.prepareCall("{CALL view_room()}");
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			System.out.println("RoomID, RoomNumber, Light Cycle, FacilityID: FacilityName");
+
 			while (rs.next()) {
-				int fID = rs.getInt("FacilityID");
+				int rmID = rs.getInt("RoomID");
+				String roomNumber = rs.getString("RoomNumber");
+				String lightCycle = rs.getString("LightCycle");
+				int facilityID = rs.getInt("FacilityID");
 				String facilityName = rs.getString("FacilityName");
-				int roomCount = rs.getInt("roomCount");
-				System.out.println(fID + ": " + facilityName + ", # rooms: " + roomCount);
+
+				System.out.println(rmID + ", " + roomNumber + ", " + lightCycle
+						+ ", " + facilityID + ": " + facilityName);
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while viewing facilities.");
+			System.out.println("ERROR: An error occurred while viewing rooms.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());
 		}
 	}
 
-	// TODO
 	@Override
 	public void viewRack() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_rack()}");
 
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("RackID, Filled/TotalSlots, RoomID");
+
+			while (rs.next()) {
+				int rackID = rs.getInt("RackID");
+				int totSlots = rs.getInt("CageSlots");
+				int fSlots = rs.getInt("FilledSlots");
+				int rmID = rs.getInt("RoomID");
+
+				System.out.println(rackID + ", " + fSlots + "/" + totSlots + ", " + rmID);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing racks.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
-	// TODO
 	@Override
 	public void viewCage() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_cage()}");
 
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageStatus, CageID, Breeding, ManagerID, RackID, "
+					+ "{Genotypes}, Bedding");
+
+			while (rs.next()) {
+				String cageStatus = rs.getString("CageStatus");
+				int cageID = rs.getInt("CageID");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				int manager = rs.getInt("Manager");
+				int rackID = rs.getInt("RackID");
+				String genotypes = rs.getString("Genotypes");
+				String bedding = rs.getString("BeddingType");
+
+				System.out.println(cageStatus + ", " + cageID + ", " + breeding + ", " + manager
+						+ ", " + rackID + ", {" + genotypes + "}, " + bedding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing cages.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
 	}
 
-	// TODO - figure out what to do with viewing stuff
 	private void viewMouse_Menu() {
-//		while (userInput.toLowerCase().compareTo("b") != 0) {
-//			System.out.println("\nHow would you like to filter mouse results?");
-//			System.out.println("1 = No Filter\n"
-//					+ "2 = By User\n"
-//					+ "3 = By Genotype\n"
-//					+ "4 = By Room\n"
-//					+ "5 = add new Cage\n"
-//					+ "6 = add new Mouse\n"
-//					+ "7 = add new Genotype\n");
-//			userInput = scan.nextLine();
-//
-//			switch (userInput.toLowerCase()) {
-//				case "1":
-//					addAddress();
-//					break;
-//				case "2":
-//					addFacility();
-//					break;
-//				case "3":
-//					addRoom();
-//					break;
-//				case "4":
-//					addRack();
-//					break;
-//				case "5":
-//					addCage();
-//					break;
-//				case "6":
-//					addMouse();
-//					break;
-//				case "7":
-//					addGenotype();
-//					break;
-//				case "b":
-//					break;
-//				default:
-//					System.out.println("Command not recognized.");
-//			}
-//		}
+		String userInput = "";
 
+		while (userInput.toLowerCase().compareTo("b") != 0) {
+			System.out.println("\nHow would you like to filter mouse results?");
+			System.out.println("1 = No Filter\n"
+					+ "2 = By User\n"
+					+ "3 = By Genotype\n"
+					+ "4 = By Room\n"
+					+ "5 = By Cage\n"
+					+ "6 = By Facility\n");
+			userInput = scan.nextLine();
+
+			switch (userInput.toLowerCase()) {
+				case "1":
+					viewMouse_NoFilter();
+					break;
+				case "2":
+					viewMouse_ByUser();
+					break;
+				case "3":
+					viewMouse_ByGenotype();
+					break;
+				case "4":
+					viewMouseByRoom();
+					break;
+				case "5":
+					viewMouseByCage();
+					break;
+				case "6":
+					viewMouseByFacility();
+					break;
+				case "b":
+					break;
+				default:
+					System.out.println("Command not recognized.");
+			}
+		}
 	}
 
-	// TODO
+	private void viewMouse_NoFilter() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_mouse_nofilter()}");
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "Manager, Breeding");
+
+			while (rs.next()) {
+				int cageID = rs.getInt("CageID");
+				int eartag = rs.getInt("Eartag");
+				String genotypeAbr = rs.getString("GenotypeAbr");
+				String sex = rs.getString("Sex");
+				Date dob = rs.getDate("DOB");
+				int weeksOld = rs.getInt("WeeksOld");
+				Date dateOfDeath = rs.getDate("DateOfDeath");
+				int originCage = rs.getInt("OriginCage");
+				int rackID = rs.getInt("RackID");
+				String roomNumber = rs.getString("RoomNumber");
+				String facilityName = rs.getString("FacilityName");
+				String manager = rs.getString("Manager");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				System.out.println(cageID + ", " + eartag + ", " + genotypeAbr +  ", " + sex + ", "
+						+ dob + ", " + weeksOld + ", " + dateOfDeath + ", " + originCage
+						+ ", " + rackID + ", " + roomNumber + ", " + facilityName +	", "
+						+ manager + ", " + breeding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing mice.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
+	}
+
+	private void viewMouse_ByUser() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_mouse_byuser(?)}");
+
+			System.out.println("Please enter userID.");
+			int uID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, uID);
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "Manager, Breeding");
+
+			while (rs.next()) {
+				int cageID = rs.getInt("CageID");
+				int eartag = rs.getInt("Eartag");
+				String genotypeAbr = rs.getString("GenotypeAbr");
+				String sex = rs.getString("Sex");
+				Date dob = rs.getDate("DOB");
+				int weeksOld = rs.getInt("WeeksOld");
+				Date dateOfDeath = rs.getDate("DateOfDeath");
+				int originCage = rs.getInt("OriginCage");
+				int rackID = rs.getInt("RackID");
+				String roomNumber = rs.getString("RoomNumber");
+				String facilityName = rs.getString("FacilityName");
+				String manager = rs.getString("Manager");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				System.out.println(cageID + ", " + eartag + ", " + genotypeAbr +  ", " + sex + ", "
+						+ dob + ", " + weeksOld + ", " + dateOfDeath + ", " + originCage
+						+ ", " + rackID + ", " + roomNumber + ", " + facilityName +	", "
+						+ manager + ", " + breeding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing mice.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: UserID not formatted as integer.");
+		}
+	}
+
+	private void viewMouse_ByGenotype() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_mouse_bygeno(?)}");
+
+			System.out.println("Please enter genotype abbreviation.");
+			String geno = scan.nextLine();
+			callableStatement.setString(1, geno);
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "Manager, Breeding");
+
+			while (rs.next()) {
+				int cageID = rs.getInt("CageID");
+				int eartag = rs.getInt("Eartag");
+				String genotypeAbr = rs.getString("GenotypeAbr");
+				String sex = rs.getString("Sex");
+				Date dob = rs.getDate("DOB");
+				int weeksOld = rs.getInt("WeeksOld");
+				Date dateOfDeath = rs.getDate("DateOfDeath");
+				int originCage = rs.getInt("OriginCage");
+				int rackID = rs.getInt("RackID");
+				String roomNumber = rs.getString("RoomNumber");
+				String facilityName = rs.getString("FacilityName");
+				String manager = rs.getString("Manager");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				System.out.println(cageID + ", " + eartag + ", " + genotypeAbr +  ", " + sex + ", "
+						+ dob + ", " + weeksOld + ", " + dateOfDeath + ", " + originCage
+						+ ", " + rackID + ", " + roomNumber + ", " + facilityName +	", "
+						+ manager + ", " + breeding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing mice.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
+	}
+
+	private void viewMouseByRoom() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_mouse_byroom(?)}");
+
+			System.out.println("Please enter room ID.");
+			int rm = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, rm);
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "Manager, Breeding");
+
+			while (rs.next()) {
+				int cageID = rs.getInt("CageID");
+				int eartag = rs.getInt("Eartag");
+				String genotypeAbr = rs.getString("GenotypeAbr");
+				String sex = rs.getString("Sex");
+				Date dob = rs.getDate("DOB");
+				int weeksOld = rs.getInt("WeeksOld");
+				Date dateOfDeath = rs.getDate("DateOfDeath");
+				int originCage = rs.getInt("OriginCage");
+				int rackID = rs.getInt("RackID");
+				String roomNumber = rs.getString("RoomNumber");
+				String facilityName = rs.getString("FacilityName");
+				String manager = rs.getString("Manager");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				System.out.println(cageID + ", " + eartag + ", " + genotypeAbr +  ", " + sex + ", "
+						+ dob + ", " + weeksOld + ", " + dateOfDeath + ", " + originCage
+						+ ", " + rackID + ", " + roomNumber + ", " + facilityName +	", "
+						+ manager + ", " + breeding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing mice.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: RoomID not formatted as integer.");
+		}
+	}
+
+	private void viewMouseByCage() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_mouse_bycage(?)}");
+
+			System.out.println("Please enter Cage ID.");
+			int cage = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, cage);
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "Manager, Breeding");
+
+			while (rs.next()) {
+				int cageID = rs.getInt("CageID");
+				int eartag = rs.getInt("Eartag");
+				String genotypeAbr = rs.getString("GenotypeAbr");
+				String sex = rs.getString("Sex");
+				Date dob = rs.getDate("DOB");
+				int weeksOld = rs.getInt("WeeksOld");
+				Date dateOfDeath = rs.getDate("DateOfDeath");
+				int originCage = rs.getInt("OriginCage");
+				int rackID = rs.getInt("RackID");
+				String roomNumber = rs.getString("RoomNumber");
+				String facilityName = rs.getString("FacilityName");
+				String manager = rs.getString("Manager");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				System.out.println(cageID + ", " + eartag + ", " + genotypeAbr +  ", " + sex + ", "
+						+ dob + ", " + weeksOld + ", " + dateOfDeath + ", " + originCage
+						+ ", " + rackID + ", " + roomNumber + ", " + facilityName +	", "
+						+ manager + ", " + breeding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing mice.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: Cage ID not formatted as integer.");
+		}
+	}
+
+	private void viewMouseByFacility() {
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL view_mouse_byfacility(?)}");
+
+			System.out.println("Please enter Facility ID.");
+			int facID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, facID);
+
+			ResultSet rs = callableStatement.executeQuery();
+
+			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "Manager, Breeding");
+
+			while (rs.next()) {
+				int cageID = rs.getInt("CageID");
+				int eartag = rs.getInt("Eartag");
+				String genotypeAbr = rs.getString("GenotypeAbr");
+				String sex = rs.getString("Sex");
+				Date dob = rs.getDate("DOB");
+				int weeksOld = rs.getInt("WeeksOld");
+				Date dateOfDeath = rs.getDate("DateOfDeath");
+				int originCage = rs.getInt("OriginCage");
+				int rackID = rs.getInt("RackID");
+				String roomNumber = rs.getString("RoomNumber");
+				String facilityName = rs.getString("FacilityName");
+				String manager = rs.getString("Manager");
+				String breeding = rs.getString("Breeding");
+
+				if (breeding.compareTo("0") == 0) {
+					breeding = "non-breeding";
+				}
+				else {
+					breeding = "breeding";
+				}
+
+				System.out.println(cageID + ", " + eartag + ", " + genotypeAbr +  ", " + sex + ", "
+						+ dob + ", " + weeksOld + ", " + dateOfDeath + ", " + originCage
+						+ ", " + rackID + ", " + roomNumber + ", " + facilityName +	", "
+						+ manager + ", " + breeding);
+			}
+		}
+		catch (SQLException e) {
+			System.out.println("ERROR: An error occurred while viewing mice.");
+			System.out.println("SQLException: " + e.getMessage());
+			System.out.println("SQLState: " + e.getSQLState());
+			System.out.println("VendorError: " + e.getErrorCode());
+		}
+		catch (NumberFormatException ex) {
+			System.out.println("ERROR: Facility ID not formatted as integer.");
+		}
+	}
+
 	@Override
 	public void viewMouse() {
-		// view all mice
-
-		// view all mice per facility
-
-		// view all mice per room
-		// view cage with all mice in it
 		viewMouse_Menu();
 	}
 

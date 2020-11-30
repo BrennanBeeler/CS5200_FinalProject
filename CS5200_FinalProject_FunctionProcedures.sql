@@ -961,5 +961,208 @@ END //
 
 DELIMITER ;
 
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_room;
+
+DELIMITER //
+
+CREATE PROCEDURE view_room()
+BEGIN
+	SELECT r.RoomID, r.RoomNumber, r.LightCycle, r.FacilityID, f.FacilityName 
+    FROM room AS r 
+    INNER JOIN facility AS f 
+    ON r.FacilityID = f.FacilityID
+    ORDER BY r.RoomID, r.RoomNumber;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_rack;
+
+DELIMITER //
+
+CREATE PROCEDURE view_rack()
+BEGIN
+	SELECT RackID, CageSlots, FilledSlots, RoomID
+    FROM rack
+    ORDER BY RackID;
+END //
+
+DELIMITER ;
 
 
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_cage;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_cage()
+BEGIN
+	SELECT c.CageStatus, c.CageID, c.Breeding, c.Manager, c.RackID, 
+    (
+    SELECT GROUP_CONCAT(DISTINCT GenotypeAbr SEPARATOR ', ') FROM mouse AS m WHERE c.CageID = m.CageID
+	) AS Genotypes, c.BeddingType FROM cage AS c
+    ORDER BY c.CageStatus, c.CageID;
+END //
+
+DELIMITER ;
+
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_mouse_nofilter;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_mouse_nofilter()
+BEGIN
+	SELECT m.CageID, m.Eartag, m.GenotypeAbr, m.Sex, m.DOB, 
+		IF (m.DateOfDeath IS NULL, TIMESTAMPDIFF(WEEK, m.DOB, CURDATE()), TIMESTAMPDIFF(DAY, m.DOB, DateOfDeath)) AS WeeksOld, 
+		m.DateOfDeath, m.OriginCage, c.RackID, rm.RoomNumber, f.FacilityName,
+		(SELECT CONCAT(UserID, ": ", FirstName, " ", LastName) FROM `user` WHERE USERID = c.Manager) AS Manager, c.Breeding 
+	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
+	INNER JOIN rack AS r ON c.RackID = r.RackID
+	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_mouse_byuser;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_mouse_byuser
+(
+	IN uID INT
+)
+BEGIN
+	SELECT m.CageID, m.Eartag, m.GenotypeAbr, m.Sex, m.DOB, 
+		IF (m.DateOfDeath IS NULL, TIMESTAMPDIFF(WEEK, m.DOB, CURDATE()), TIMESTAMPDIFF(DAY, m.DOB, DateOfDeath)) AS WeeksOld, 
+		m.DateOfDeath, m.OriginCage, c.RackID, rm.RoomNumber, f.FacilityName,
+		(SELECT CONCAT(UserID, ": ", FirstName, " ", LastName) FROM `user` WHERE USERID = c.Manager) AS Manager, c.Breeding 
+	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
+	INNER JOIN rack AS r ON c.RackID = r.RackID
+	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID
+    WHERE c.Manager = uID;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_mouse_bygeno;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_mouse_bygeno
+(
+	IN geno VARCHAR(10)
+)
+BEGIN
+	SELECT m.CageID, m.Eartag, m.GenotypeAbr, m.Sex, m.DOB, 
+		IF (m.DateOfDeath IS NULL, TIMESTAMPDIFF(WEEK, m.DOB, CURDATE()), TIMESTAMPDIFF(DAY, m.DOB, DateOfDeath)) AS WeeksOld, 
+		m.DateOfDeath, m.OriginCage, c.RackID, rm.RoomNumber, f.FacilityName,
+		(SELECT CONCAT(UserID, ": ", FirstName, " ", LastName) FROM `user` WHERE USERID = c.Manager) AS Manager, c.Breeding 
+	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
+	INNER JOIN rack AS r ON c.RackID = r.RackID
+	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID
+    WHERE m.GenotypeAbr = geno;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_mouse_byroom;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_mouse_byroom
+(
+	IN rmID INT
+)
+BEGIN
+	SELECT m.CageID, m.Eartag, m.GenotypeAbr, m.Sex, m.DOB, 
+		IF (m.DateOfDeath IS NULL, TIMESTAMPDIFF(WEEK, m.DOB, CURDATE()), TIMESTAMPDIFF(DAY, m.DOB, DateOfDeath)) AS WeeksOld, 
+		m.DateOfDeath, m.OriginCage, c.RackID, rm.RoomNumber, f.FacilityName,
+		(SELECT CONCAT(UserID, ": ", FirstName, " ", LastName) FROM `user` WHERE USERID = c.Manager) AS Manager, c.Breeding 
+	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
+	INNER JOIN rack AS r ON c.RackID = r.RackID
+	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID
+    WHERE rm.RoomID = rmID;
+END //
+
+DELIMITER ;
+
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_mouse_bycage;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_mouse_bycage
+(
+	IN cage INT
+)
+BEGIN
+	SELECT m.CageID, m.Eartag, m.GenotypeAbr, m.Sex, m.DOB, 
+		IF (m.DateOfDeath IS NULL, TIMESTAMPDIFF(WEEK, m.DOB, CURDATE()), TIMESTAMPDIFF(DAY, m.DOB, DateOfDeath)) AS WeeksOld, 
+		m.DateOfDeath, m.OriginCage, c.RackID, rm.RoomNumber, f.FacilityName,
+		(SELECT CONCAT(UserID, ": ", FirstName, " ", LastName) FROM `user` WHERE USERID = c.Manager) AS Manager, c.Breeding 
+	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
+	INNER JOIN rack AS r ON c.RackID = r.RackID
+	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID
+    WHERE m.CageID = cage;
+END //
+
+DELIMITER ;
+
+-- --------------------------------------------------------------
+
+DROP PROCEDURE IF EXISTS view_mouse_byfacility;
+
+DELIMITER //
+
+
+
+CREATE PROCEDURE view_mouse_byfacility
+(
+	IN facID INT
+)
+BEGIN
+	SELECT m.CageID, m.Eartag, m.GenotypeAbr, m.Sex, m.DOB, 
+		IF (m.DateOfDeath IS NULL, TIMESTAMPDIFF(WEEK, m.DOB, CURDATE()), TIMESTAMPDIFF(DAY, m.DOB, DateOfDeath)) AS WeeksOld, 
+		m.DateOfDeath, m.OriginCage, c.RackID, rm.RoomNumber, f.FacilityName,
+		(SELECT CONCAT(UserID, ": ", FirstName, " ", LastName) FROM `user` WHERE USERID = c.Manager) AS Manager, c.Breeding 
+	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
+	INNER JOIN rack AS r ON c.RackID = r.RackID
+	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID
+    WHERE f.FacilityID = facID;
+END //
+
+DELIMITER ;
