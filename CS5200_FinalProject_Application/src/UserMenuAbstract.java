@@ -470,7 +470,8 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 		String userInput = "";
 
 		while (userInput.toLowerCase().compareTo("b") != 0) {
-			System.out.println("\nHow would you like to filter mouse results?");
+			System.out.println("\nHow would you like to filter mouse results? Type b to "
+					+ "go back to the previous menu.");
 			System.out.println("1 = No Filter\n"
 					+ "2 = By User\n"
 					+ "3 = By Genotype\n"
@@ -514,7 +515,7 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			ResultSet rs = callableStatement.executeQuery();
 
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
-					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
+					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName, "
 					+ "Manager, Breeding");
 
 			while (rs.next()) {

@@ -1,14 +1,13 @@
 use mouse_housing;
 
-DROP FUNCTION IF EXISTS login;
+DROP PROCEDURE IF EXISTS login;
 
 DELIMITER //
-CREATE FUNCTION login(
-	uName INT,
-    pWord VARCHAR(255)
+CREATE PROCEDURE login(
+	OUT val INT,
+	IN uID INT,
+    IN pWord VARCHAR(255)
 )
-RETURNS INT 
-DETERMINISTIC READS SQL DATA
 BEGIN   
 	DECLARE usercount INT;
 	DECLARE admincount INT;
@@ -21,15 +20,15 @@ BEGIN
         
     START TRANSACTION;    
         
-	SELECT COUNT(*) INTO usercount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 0;
-	SELECT COUNT(*) INTO admincount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 1;
+	SELECT COUNT(*) INTO usercount FROM `user` WHERE UserID = uID AND UserPassword = pWord AND AdminFlag = 0;
+	SELECT COUNT(*) INTO admincount FROM `user` WHERE UserID = uID AND UserPassword = pWord AND AdminFlag = 1;
     
     IF (usercount = 0 AND admincount = 0) THEN 
-		RETURN 0;
+		SELECT 0 INTO val;
 	ELSEIF (usercount = 1) THEN 
-		RETURN 1;
+		SELECT 1 INTO val;
 	ELSEIF (admincount = 1) THEN 
-		RETURN 2;
+		SELECT 2 INTO val;
 	END IF;
     
     COMMIT;
@@ -573,14 +572,6 @@ CREATE TRIGGER insert_cage_trigger
     FOR EACH ROW
 BEGIN 
 	DECLARE temp_fill INT;
-    
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-		BEGIN
-			ROLLBACK;
-            RESIGNAL;
-		END;
-        
-	START TRANSACTION;
 	
 	IF NEW.CageStatus = 'Active' THEN 
 		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID) <= 0 THEN
@@ -591,8 +582,7 @@ BEGIN
 			UPDATE rack SET FilledSlots = (temp_fill + 1) WHERE RackID = NEW.RackID;
 		END IF;
 	END IF;
-    
-    COMMIT;
+
 END //
 DELIMITER ;
 
@@ -606,14 +596,6 @@ CREATE TRIGGER update_cage_trigger
     FOR EACH ROW
 BEGIN 
 	DECLARE temp_fill INT;
-    
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-		BEGIN
-			ROLLBACK;
-            RESIGNAL;
-		END;
-        
-	START TRANSACTION;
 
 	IF NEW.CageStatus = 'Active' THEN 
 		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID) <= 0 THEN
@@ -624,8 +606,7 @@ BEGIN
 			UPDATE rack SET FilledSlots = (temp_fill + 1) WHERE RackID = NEW.RackID;
 		END IF;
 	END IF;
-    
-    COMMIT;
+
 END //
 DELIMITER ;
 
@@ -1085,7 +1066,8 @@ BEGIN
 	FROM mouse AS m INNER JOIN cage AS c ON c.CageID = m.CageID
 	INNER JOIN rack AS r ON c.RackID = r.RackID
 	INNER JOIN room AS rm ON r.RoomID = rm.RoomID
-	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID;
+	INNER JOIN facility AS f ON rm.FacilityID = f.FacilityID
+    ORDER BY m.CageID;
 END //
 
 DELIMITER ;

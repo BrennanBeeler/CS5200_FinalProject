@@ -85,7 +85,7 @@ public class Controller {
 		appPassword = scan.nextLine();
 
 		try {
-			CallableStatement loginStmt = conn.prepareCall("{? = call login(?, ?)}");
+			CallableStatement loginStmt = conn.prepareCall("{call login(?, ?, ?)}");
 			loginStmt.registerOutParameter(1, Types.INTEGER);
 			loginStmt.setInt(2, appUserID);
 			loginStmt.setString(3, appPassword);
