@@ -3,6 +3,7 @@ use mouse_housing;
 DROP PROCEDURE IF EXISTS login;
 
 DELIMITER //
+-- Determines user access level
 CREATE PROCEDURE login(
 	OUT val INT,
 	IN uID INT,
@@ -224,7 +225,7 @@ BEGIN
 IF (cID) NOT IN (SELECT CageID FROM cage) THEN
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage that doens't exist.";
-ELSEIF (cID != originID ) THEN
+ELSEIF (cID = originID ) THEN
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
 ELSE 
@@ -244,6 +245,25 @@ END IF;
 END //
 
 DELIMITER ;
+
+-- ------------------------------------------------------------------------
+DROP TRIGGER IF EXISTS insert_mouse_origin;
+
+DELIMITER //
+
+-- Make sure that origin cage of a mouse is breeding cage
+CREATE TRIGGER insert_mouse_origin
+	BEFORE INSERT ON mouse
+    FOR EACH ROW
+BEGIN 
+	IF (NEW.OriginCage NOT IN (SELECT CageID FROM cage WHERE Breeding = true)) THEN
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Origin cage must be a breeding cage.";
+	END IF;
+END //
+DELIMITER ;
+
+
 
 -- ------------------------------------------------------------------------
 DROP TRIGGER IF EXISTS insert_mouse_cage_limit;
@@ -284,11 +304,18 @@ CREATE TRIGGER update_mouse_cage_limit
 	BEFORE UPDATE ON mouse
     FOR EACH ROW
 BEGIN 
-	IF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
-		IF (SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5 THEN
+	-- Make sure not putting mouse in origin cage
+	IF (NEW.CageID = NEW.OriginCage) THEN
+    	SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
+	-- If not a breeder cage
+	ELSEIF EXISTS(SELECT CageID FROM cage AS c WHERE c.Breeding = FALSE AND c.CageID = NEW.CageID) THEN 
+		-- Check if there are more than 5 mice in new cage AND check if mouse is already in cage
+		IF ((SELECT COUNT(*) FROM mouse WHERE CageID = NEW.CageID) >= 5) AND (NEW.Eartag NOT IN (SELECT Eartag FROM mouse WHERE CageID = NEW.CageID)) THEN
 			SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot house more than 5 mice in a cage.";
 		END IF;
+    -- If breeder cage   
 	ELSE 
 		IF (SELECT COUNT(*) FROM mouse AS m2 WHERE NEW.Sex = m2.Sex AND NEW.Sex = 'M' AND NEW.CageID = m2.CageID) >= 1 THEN
 			SIGNAL SQLSTATE '45000'

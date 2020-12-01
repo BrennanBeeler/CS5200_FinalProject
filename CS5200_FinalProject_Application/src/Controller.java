@@ -19,13 +19,13 @@ public class Controller {
 		appUserID = -1;
 		appPassword = "";
 		adminAccess = false;
-		Connection conn = null;
-		Scanner scan = null;
+		conn = null;
+		scan = null;
 	}
 
-	// TODO move into view?
 	private Connection sqlLogin() {
-		final String database = "jdbc:mysql://localhost:3306/mouse_housing?characterEncoding=UTF-8&useSSL=false";
+		final String database = "jdbc:mysql://localhost:3306/mouse_housing"
+								+ "?characterEncoding=UTF-8&useSSL=false";
 		Connection conn = null;
 		boolean connFlag = false;
 
@@ -54,19 +54,18 @@ public class Controller {
 					connFlag = true;
 				}
 
-				System.out.println("Connection to SQL server successful.");
+				System.out.println("SUCCESS: Connection to SQL server successful.");
 			}
 			catch (SQLException ex) {
 				if (ex.getSQLState().compareTo("08S01") == 0) {
-					System.out.println("There is a connection issue with the server."
+					System.out.println("ERROR: There is a connection issue with the server."
 							+ " Check that the server is running.");
 				}
 				else {
-					System.out.println("Those are not viable credentials.");
+					System.out.println("ERROR: Those are not viable credentials.");
 				}
 			}
 		}
-
 		// on success return connection
 		return conn;
 	}
@@ -78,7 +77,7 @@ public class Controller {
 			appUserID = Integer.parseInt(scan.nextLine());
 		}
 		catch (NumberFormatException e) {
-			System.out.println("Non-number input for UserID. Please try again.");
+			System.out.println("ERROR: Non-number input for UserID. Please try again.");
 			return false;
 		}
 		System.out.println("Please enter app password.");
@@ -95,16 +94,16 @@ public class Controller {
 			int loginResult = loginStmt.getInt(1);
 
 			if (loginResult == 0) {
-				System.out.println("Those login credentials are incorrect.");
+				System.out.println("ERROR: Those login credentials are incorrect.");
 				return false;
 			} else if (loginResult == 1) {
 				adminAccess = false;
-				System.out.println("Success- logged in as a user.");
+				System.out.println("SUCCESS: logged in with user access.");
 				return true;
 
 			} else if (loginResult == 2) {
 				adminAccess = true;
-				System.out.println("Success- logged in as a admin.");
+				System.out.println("SUCCESS:- logged in with admin access.");
 				return true;
 			}
 		} catch (SQLException ex) {
@@ -113,8 +112,6 @@ public class Controller {
 			System.out.println("SQLState: " + ex.getSQLState());
 			System.out.println("VendorError: " + ex.getErrorCode());
 		}
-
-
 		return false;
 	}
 
@@ -128,6 +125,7 @@ public class Controller {
 			userResponse = scan.nextLine();
 		}
 
+		// Create new address for user
 		if (userResponse.toLowerCase().compareTo("y") == 0) {
 			try {
 				CallableStatement newAddressStmt =
@@ -153,7 +151,7 @@ public class Controller {
 				System.out.println("Address successfully added to UserID: " + userID);
 			}
 			catch (SQLException e) {
-				System.out.println("An error occurred while adding the address.");
+				System.out.println("ERROR: An error occurred while adding the address.");
 			}
 		}
 	}
@@ -189,14 +187,14 @@ public class Controller {
 
 			// Try and create a new user for these details
 			if (newUserStmt.executeUpdate() == 1) {
-				System.out.println("User successfully added.");
+				System.out.println("SUCCESS: User successfully added.");
 			}
 
 			appLogin_adrHelper(userID);
 		}
 		catch (SQLException ex) {
 			if (ex.getErrorCode() == 1062) {
-				System.out.println("Duplicate UserID found. If you are sure this is your "
+				System.out.println("ERROR: Duplicate UserID found. If you are sure this is your "
 						+ "user id please contact an admin for assistance.");
 			}
 			else {
@@ -207,75 +205,74 @@ public class Controller {
 			}
 		}
 		catch (NumberFormatException e) {
-			System.out.println("Non-number input for UserID. Please try again.");
+			System.out.println("ERROR: Non-number input for UserID. Please try again.");
 		}
 	}
 
 
-	private void appLogin() {
+	private boolean appLogin() {
 		boolean flag = false;
 
 		while (!flag) {
-			System.out.println("Welcome to MouseHousing. Type 'login' to connect to an existing "
+			System.out.println("\nWelcome to MouseHousing. Type 'login' to connect to an existing "
 					+ "profile. Type 'new' to create a new user profile. Type 'q' to exit "
 					+ "application.");
 
 			String response = scan.nextLine();
 
-			// User tries to login
-			if (response.toLowerCase().compareTo("login") == 0) {
-				flag = appLogin_loginHelper();
-			}
-			// User tries to create new user account in database
-			else if (response.toLowerCase().compareTo("new") == 0) {
-				appLogin_newHelper();
-			}
-			// User quits program
-			else if (response.toLowerCase().compareTo("q") == 0) {
-				scan.close();
-				System.exit(0);
+			switch (response.toLowerCase()) {
+				// User tries to login
+				case "login":
+					flag = appLogin_loginHelper();
+					break;
+				// User tries to create new user account in database
+				case "new":
+					appLogin_newHelper();
+					break;
+				// User quits program
+				case "q":
+					return false;
+				default:
+					System.out.println("Command not recognized.");
 			}
 		}
+		return true;
 	}
 
 	public void programLoop() {
 		scan = new Scanner(System.in);
 		conn = sqlLogin();
 
-
 		if (Objects.isNull(conn)) {
-			System.out.println("Connection failed to be made.");
+			System.out.println("ERROR: Connection failed to be made.");
 			scan.close();
 			System.exit(1);
 		}
 
-		appLogin();
+		// Check if login is successful
+		if (appLogin()) {
+			UserMenuInterface menu;
 
-		UserMenuInterface menu;
+			if (adminAccess) {
+				menu = new AdminMenu(conn);
+			}
+			else {
+				menu = new UserMenu(conn);
+			}
 
-		if (adminAccess) {
-			menu = new AdminMenu(conn);
+			menu.menuStart(appUserID);
 		}
-		else {
-			menu = new UserMenu(conn);
-		}
-
-		menu.menuStart(appUserID);
 
 		// close connection and scanner
 		try {
 			conn.close();
 			if (conn.isClosed()) {
-				System.out.println("Connection to server closed successfully.");
+				System.out.println("SUCCESS: Connection to server closed successfully.");
 			}
 		}
 		catch (SQLException ex) {
-			// TODO figure out if actually want these
-			System.out.println("SQLException: " + ex.getMessage());
-			System.out.println("SQLState: " + ex.getSQLState());
-			System.out.println("VendorError: " + ex.getErrorCode());
+			System.out.println("ERROR: Problem with closing connection to server.");
 		}
-
 		scan.close();
 	}
 }

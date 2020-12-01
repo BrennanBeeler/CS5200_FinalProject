@@ -254,6 +254,8 @@ public class UserMenu extends UserMenuAbstract {
 					conn.prepareCall("{CALL user_view_user()}");
 			ResultSet rs = callableStatement.executeQuery();
 
+			System.out.println("\nUserID, Name");
+
 			while (rs.next()) {
 				int uID = rs.getInt("UserID");
 				String fName = rs.getString("FirstName");
@@ -262,17 +264,13 @@ public class UserMenu extends UserMenuAbstract {
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while adding the rack.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			System.out.println("ERROR: An error occurred while viewing user info.");
 		}
 	}
 
 	@Override
 	public void viewFacilityAccess() {
 		try {
-			// Only allows user to see UserID, FirstName, LastName
 			CallableStatement callableStatement =
 					conn.prepareCall("{CALL view_facility_access(?)}");
 			callableStatement.setInt(1, userID);
@@ -292,7 +290,7 @@ public class UserMenu extends UserMenuAbstract {
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while accessing your facility access.");
+			System.out.println("ERROR: An error occurred while viewing your facility access.");
 			System.out.println("SQLException: " + e.getMessage());
 			System.out.println("SQLState: " + e.getSQLState());
 			System.out.println("VendorError: " + e.getErrorCode());

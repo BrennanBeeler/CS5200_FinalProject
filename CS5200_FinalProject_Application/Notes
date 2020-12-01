@@ -23,28 +23,31 @@ TODO: Finished
 - Add user view of facility access- but just their own
 - turn new_address into transaction
 - look to make transactions- delete_address etc.
+- Remove filled slots from rack and instead use a trigger to determine if okay to add cage to
+a rack- if inactive-> doesn't count
+- test sex triggers
+- CANNOT UPDATE MOUSE DETAILS WITHIN SAME CAGE AS TRIGGERS MORE THAN 5 MICE TRIGGER
+- make sure cageID cant be origin cage on mouse update
+- keep males and females separate
+
+
 
 
 TODO: TODO
-- Remove filled slots from rack and instead use a trigger to determine if okay to add cage to
-a rack- if inactive-> doesn't count
+- REMOVE ALL SQL EXCEPTIONS- must be english
+
+
 - Show possible values before insertion
 - Make sure that each call to stored procedure is protected with catch that is appropriate
-- keep males and females separate
 - add descriptions of data order
 - go through all stored procedures and make sure to check comments
 - test cage number triggers
-- test sex triggers
 - remove checks to see return type of execute etc.
 - test everything
 - make sure on deletion that it checks if something exists - delete_cage, delete_mouse
 - for now going to keep update stuff simple- just update one at a time for both user and admin, but
     later can decide based on time if want to branch out and allow broader changes]
-- separate manager change to its own option?
-- make sure cageID cant be origin cage on mouse update
-- cant currently change password
 - can input empty line for fields?
-- add view single mouse
 - view mouse doesn't tell when no mice
 - cover all normal errors with customized text
 - checkout view ordering
@@ -56,11 +59,9 @@ TODO: MAYBE
 - remove roomID? use facilityID + Room Num instead?
 - allow user to update room beyond just light
 - allow user to update primary key of tables as admin?
-- add view_full - total view of stuff
 - use https://stackoverflow.com/questions/18672643/how-to-print-a-table-of-information-in-java to
     create pretty tables
-- maybe remove inputted values from view_mouse
-
+- make origin cage only breeding?
 
 
 Thinking:
