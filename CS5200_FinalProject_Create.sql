@@ -14,6 +14,7 @@ CREATE TABLE address
 );
 
 INSERT INTO address (Street, City, State, Zip) VALUE("181 Main Street", "Boston", "MA", "02111");
+INSERT INTO address (Street, City, State, Zip) VALUE("47 Church Street", "Boston", "MA", "02112");
 
 CREATE TABLE `user`
 (
@@ -29,8 +30,8 @@ CREATE TABLE `user`
 );
 
 INSERT INTO `user` VALUE (1, "password", "Billy", "Johnson", "b_johnson@domain.com", "13032021111", TRUE, 1);
-INSERT INTO `user` VALUE (2, "test", "Joe", "White", "j_white@domain.com", "9491230303", FALSE, 1);
-INSERT INTO `user` VALUE (3, "test", "test", "test", "test", "test", FALSE, 1);
+INSERT INTO `user` VALUE (2, "test", "Joe", "White", "j_white@domain.com", "9491230303", FALSE, 2);
+INSERT INTO `user` VALUE (3, "test", "Julie", "Rosen", "j_rosen@domain.com", "9491230341", FALSE, 2);
 
 
 CREATE TABLE facility
@@ -59,7 +60,7 @@ INSERT INTO user_facility_access VALUE(1, 23);
 INSERT INTO user_facility_access VALUE(1, 53);
 INSERT INTO user_facility_access VALUE(2, 1);
 INSERT INTO user_facility_access VALUE(2, 34);
-
+INSERT INTO user_facility_access VALUE(3, 23);
 
 CREATE TABLE room
 (
@@ -90,16 +91,20 @@ CREATE TABLE rack
 );
 
 INSERT INTO rack VALUE (1, 100, 0, 1);
-INSERT INTO rack VALUE (2, 10, 0, 1);
+INSERT INTO rack VALUE (2, 10, 0, 2);
+INSERT INTO rack VALUE (37, 2, 0, 7);
 
 
 CREATE TABLE genotype
 (
-	GenotypeAbr VARCHAR(10) PRIMARY KEY, 				-- Had to add table to avoid large amount of typing with every mouse
+	GenotypeAbr VARCHAR(10) PRIMARY KEY, 	
     GenotypeDetails VARCHAR(200) NOT NULL UNIQUE
 );
 
-INSERT INTO genotype VALUE("test", "testing info");
+INSERT INTO genotype VALUE("B6", "C57BL/6J");
+INSERT INTO genotype VALUE("Mc4r", "B6;129S4-Mc4rtm1Lowl/J");
+INSERT INTO genotype VALUE("Piezo2", "B6(SJL)-Piezo2tm2.2Apat/J");
+
 
 CREATE TABLE cage
 (
@@ -113,9 +118,14 @@ CREATE TABLE cage
     CONSTRAINT cage_to_user FOREIGN KEY (Manager) REFERENCES `user`(UserID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-INSERT INTO cage VALUE(1, "test", 'Active', 1, 2, FALSE);
-INSERT INTO cage VALUE(2, "test", 'Active', 1, 2, TRUE);
-INSERT INTO cage VALUE(3, "test", 'Active', 1, 1, FALSE);
+INSERT INTO cage VALUE(1, "aspen", 'Active', 1, 2, FALSE);
+INSERT INTO cage VALUE(2, "aspen", 'Active', 1, 2, TRUE);
+INSERT INTO cage VALUE(3, "Vitakraft", 'Active', 2, 1, FALSE);
+INSERT INTO cage VALUE(11, "Vitakraft", 'Active', 37, 3, TRUE);
+INSERT INTO cage VALUE(24, "aspen", 'Active', 37, 3, FALSE);
+INSERT INTO cage VALUE(15, "aspen", 'Inactive', 37, 3, FALSE);
+
+
 
 
 CREATE TABLE mouse
@@ -132,11 +142,23 @@ CREATE TABLE mouse
 	CONSTRAINT mouse_to_origincage FOREIGN KEY (CageID) REFERENCES cage(CageID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
-INSERT INTO mouse VALUES (1, "test", "m", "2000-11-11", NULL, 1, 2), (2, "test", "m", "2000-11-11", NULL, 1, 2), 
-						(3, "test", "m", "2000-11-11", NULL, 1, 2), (4, "test", "m", "2000-11-11", NULL, 1, 2);
+-- Cage 1
+INSERT INTO mouse VALUES (1, "B6", "m", "2020-11-11", NULL, 1, 2), (2, "B6", "m", "2020-11-11", NULL, 1, 2), 
+						(3, "B6", "m", "2020-11-11", NULL, 1, 2), (4, "B6", "m", "2020-11-11", NULL, 1, 2), (9, "B6", "m", "2020-11-11", "2020-12-14", 1, 2);
                         
-INSERT INTO mouse VALUES (5, "test", "f", "2000-11-11", NULL, 3, 2), (6, "test", "f", "2000-11-11", NULL, 3, 2), 
-						(7, "test", "f", "2000-11-11", NULL, 3, 2), (8, "test", "f", "2000-11-11", NULL, 3, 2);           
+-- Cage 2                        
+INSERT INTO mouse VALUES (14, "B6", "f", "2020-07-24", NULL, 2, NULL), (15, "B6", "m", "2020-07-25", NULL, 2, NULL);                         
                         
+-- Cage 3                        
+INSERT INTO mouse VALUES (5, "B6", "f", "2020-11-11", NULL, 3, 2), (6, "B6", "f", "2020-11-11", NULL, 3, 2), 
+						(7, "B6", "f", "2020-11-11", NULL, 3, 2), (8, "B6", "f", "2020-11-11", NULL, 3, 2);
                         
+-- Cage 11     
+INSERT INTO mouse VALUES (60, "piezo2", "f", "2020-08-24", NULL, 11, NULL), (61, "piezo2", "m", "2020-08-19", NULL, 11, NULL);                        
+
+-- Cage 24         
+INSERT INTO mouse VALUES (62, "piezo2", "f", "2020-10-14", NULL, 24, 11), (63, "piezo2", "f", "2020-10-14", NULL, 24, 11), 
+						(64, "piezo2", "f", "2020-10-14", NULL, 24, 11), (65, "piezo2", "f", "2020-10-14", NULL, 24, 2), (66, "piezo2", "f", "2020-10-14", NULL, 24, 11);       
                         
+-- Cage 15
+INSERT INTO mouse VALUES (121, "Mc4r", "f", "2019-04-14", "2020-01-10", 11, NULL), (122, "Mc4r", "f", "2019-04-19", "2020-01-10", 11, NULL);                         

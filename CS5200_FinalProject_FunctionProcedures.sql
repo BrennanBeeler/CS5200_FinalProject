@@ -12,6 +12,15 @@ DETERMINISTIC READS SQL DATA
 BEGIN   
 	DECLARE usercount INT;
 	DECLARE admincount INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+    START TRANSACTION;    
+        
 	SELECT COUNT(*) INTO usercount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 0;
 	SELECT COUNT(*) INTO admincount FROM `user` WHERE UserID = uName AND UserPassword = pWord AND AdminFlag = 1;
     
@@ -22,6 +31,9 @@ BEGIN
 	ELSEIF (admincount = 1) THEN 
 		RETURN 2;
 	END IF;
+    
+    COMMIT;
+    
 END//
 
 DELIMITER ;
@@ -539,8 +551,7 @@ DROP PROCEDURE IF EXISTS initialize_rack_filled;
 
 DELIMITER //
 
-CREATE PROCEDURE initialize_rack_filled
-()
+CREATE PROCEDURE initialize_rack_filled()
 BEGIN
 	UPDATE rack AS r SET FilledSlots = (SELECT COUNT(*) FROM cage AS c WHERE r.RackID = c.RackID AND c.CageStatus = 'Active');
 END //
@@ -562,6 +573,14 @@ CREATE TRIGGER insert_cage_trigger
     FOR EACH ROW
 BEGIN 
 	DECLARE temp_fill INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+	START TRANSACTION;
 	
 	IF NEW.CageStatus = 'Active' THEN 
 		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID) <= 0 THEN
@@ -572,6 +591,8 @@ BEGIN
 			UPDATE rack SET FilledSlots = (temp_fill + 1) WHERE RackID = NEW.RackID;
 		END IF;
 	END IF;
+    
+    COMMIT;
 END //
 DELIMITER ;
 
@@ -585,6 +606,14 @@ CREATE TRIGGER update_cage_trigger
     FOR EACH ROW
 BEGIN 
 	DECLARE temp_fill INT;
+    
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+	START TRANSACTION;
 
 	IF NEW.CageStatus = 'Active' THEN 
 		IF (SELECT SUM(CageSlots - FilledSlots) FROM rack AS r WHERE r.RackID = NEW.RackID) <= 0 THEN
@@ -595,6 +624,8 @@ BEGIN
 			UPDATE rack SET FilledSlots = (temp_fill + 1) WHERE RackID = NEW.RackID;
 		END IF;
 	END IF;
+    
+    COMMIT;
 END //
 DELIMITER ;
 
@@ -626,6 +657,15 @@ CREATE PROCEDURE delete_user
 	IN uID INT
 )
 BEGIN
+
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM `user` WHERE UserID = uID) THEN
 		CALL delete_address(uID);
 		DELETE FROM `user` WHERE UserID = uID;
@@ -633,6 +673,9 @@ BEGIN
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: User does not exist.";
     END IF;
+   
+COMMIT;   
+    
 END //
 
 DELIMITER ;
@@ -786,6 +829,14 @@ CREATE PROCEDURE deactivate_cage
     IN cID INT
 )
 BEGIN
+DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+START TRANSACTION;
+
 	IF (uid) IS NULL THEN
 		UPDATE cage SET CageStatus = 'Inactive' WHERE CageID = cID;
         UPDATE mouse SET DateOfDeath = CURRENT_DATE() WHERE CageID = cID;
@@ -798,6 +849,9 @@ BEGIN
 				SET MESSAGE_TEXT = "ERROR: Cannot update cage that you do not manage.";
 		END IF;
     END IF;
+ 
+COMMIT;
+    
 END //
 
 DELIMITER ;

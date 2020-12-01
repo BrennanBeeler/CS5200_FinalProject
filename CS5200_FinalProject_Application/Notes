@@ -12,13 +12,17 @@ Answered Questions:
 
 
 Questions:
-1)
+1) Is if else a transaction - new_mouse, insert_mouse_cage_limit, update_mouse_cage_limit,
+    insert_mouse_sex_restrict, update_mouse_sex_restrict, view_address, view_facility_access,
+       delete_cage, delete_facility_access, delete_facility, delete_room, delete_rack, delete_genotype,
+       delete_mouse, update_cage, update_mouse
 
 TODO: Finished
 - change add address so it allows same address if entered to reference same entry
 - Create abstract class for UserMenu and AdminMenu - create statements etc. where applicable
 - Add user view of facility access- but just their own
 - turn new_address into transaction
+- look to make transactions- delete_address etc.
 
 
 TODO: TODO
@@ -33,7 +37,6 @@ a rack- if inactive-> doesn't count
 - test sex triggers
 - remove checks to see return type of execute etc.
 - test everything
-- look to make transactions- delete_address etc.
 - make sure on deletion that it checks if something exists - delete_cage, delete_mouse
 - for now going to keep update stuff simple- just update one at a time for both user and admin, but
     later can decide based on time if want to branch out and allow broader changes]
@@ -43,13 +46,13 @@ a rack- if inactive-> doesn't count
 - can input empty line for fields?
 - add view single mouse
 - view mouse doesn't tell when no mice
+- cover all normal errors with customized text
 
 
 TODO: MAYBE
 - Increase facility name length allowed
-- cover all normal errors with customized text
 - enum will accept integer values... Fix?
--remove roomID? use facilityID + Room Num instead?
+- remove roomID? use facilityID + Room Num instead?
 - allow user to update room beyond just light
 - allow user to update primary key of tables as admin?
 - add view_full - total view of stuff
