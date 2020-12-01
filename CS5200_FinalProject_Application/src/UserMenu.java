@@ -291,9 +291,6 @@ public class UserMenu extends UserMenuAbstract {
 		}
 		catch (SQLException e) {
 			System.out.println("ERROR: An error occurred while viewing your facility access.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
 		}
 	}
 
@@ -323,7 +320,7 @@ public class UserMenu extends UserMenuAbstract {
 
 				callableStatement.execute();
 
-				System.out.println("SUCCESS: Cage updated to inactive and mice marked.");
+				System.out.println("SUCCESS: Cage updated to inactive and mice DOD updated.");
 			}
 			else {
 				CallableStatement callableStatement =
@@ -372,11 +369,12 @@ public class UserMenu extends UserMenuAbstract {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			} else {
-				System.out.println("ERROR: An error occurred while adding the cage.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot change rackID or Manager to invalid values.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while modifying the cage.");
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -419,7 +417,7 @@ public class UserMenu extends UserMenuAbstract {
 				callableStatement.setNull(3, Types.DATE);
 			}
 
-			System.out.println("Please enter cageID where mouse is housed.");
+			System.out.println("Please enter new cageID for mouse.");
 			int cageID = Integer.parseInt(scan.nextLine());
 			callableStatement.setInt(4, cageID);
 
@@ -432,7 +430,11 @@ public class UserMenu extends UserMenuAbstract {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			} else {
+			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot update mouse with invalid genotype or cageID.");
+			}
+			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
@@ -475,9 +477,8 @@ public class UserMenu extends UserMenuAbstract {
 				System.out.println(e.getMessage());
 			}
 			else {
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+				System.out.println("ERROR: Problem encountered where deleting cage.");
+
 			}
 		}
 		catch (NumberFormatException nx) {

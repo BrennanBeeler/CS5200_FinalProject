@@ -557,7 +557,10 @@ CREATE PROCEDURE delete_cage
     IN cID INT
 )
 BEGIN
-	IF (uid) IS NULL THEN
+	IF NOT EXISTS (SELECT * FROM cage WHERE CageID = cID) THEN
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot delete cage that does not exist.";
+	ELSEIF (uid) IS NULL THEN
 		DELETE FROM cage WHERE CageID = cID;
 	ELSE 
 		IF cID IN (SELECT CageID FROM cage WHERE Manager = uID) THEN
@@ -811,7 +814,10 @@ CREATE PROCEDURE delete_mouse
     IN eTag INT
 )
 BEGIN
-	IF (uid) IS NULL THEN
+	IF NOT EXISTS (SELECT * FROM mouse WHERE Eartag = eTag) THEN
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot delete mouse that does not exist.";
+	ELSEIF (uid) IS NULL THEN
 		DELETE FROM mouse WHERE Eartag = eTag;
 	ELSE 
 		IF eTag IN (SELECT Eartag FROM mouse AS m WHERE m.CageID IN (SELECT CageID FROM cage WHERE Manager = uID)) THEN
@@ -845,7 +851,10 @@ DECLARE EXIT HANDLER FOR SQLEXCEPTION
         
 START TRANSACTION;
 
-	IF (uid) IS NULL THEN
+	IF NOT EXISTS (SELECT * FROM cage WHERE CageID = cID) THEN
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot modify cage that does not exist.";
+	ELSEIF (uid) IS NULL THEN
 		UPDATE cage SET CageStatus = 'Inactive' WHERE CageID = cID;
         UPDATE mouse SET DateOfDeath = CURRENT_DATE() WHERE CageID = cID;
 	ELSE 
@@ -880,8 +889,11 @@ CREATE PROCEDURE update_cage
     IN manID INT
 )
 BEGIN
+	IF NOT EXISTS (SELECT * FROM cage WHERE CageID = cID) THEN 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot update cage that doesn't exist.";
 	-- ADMIN
-	IF userID IS NULL THEN
+	ELSEIF userID IS NULL THEN
 		IF manID IS NULL THEN
 			UPDATE cage SET BeddingType = bType, CageStatus = cStatus, RackID = rID WHERE CageID = cID;
 		ELSE 
@@ -920,14 +932,17 @@ CREATE PROCEDURE update_mouse
     IN manID INT
 )
 BEGIN
-	IF manID IS NULL THEN
+	IF NOT EXISTS (SELECT * FROM mouse WHERE Eartag = eTag) THEN
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot update mouse that does not exist.";
+	ELSEIF manID IS NULL THEN
 		UPDATE mouse SET GenotypeAbr = geno, DateOfDeath = dod, CageID = cID WHERE Eartag = eTag;
     ELSE 
-		IF cID IN (SELECT CageID FROM cage WHERE Manager = manID) THEN
+		IF (SELECT CageID FROM mouse WHERE Eartag = eTag) IN (SELECT CageID FROM cage WHERE Manager = manID) THEN
 			UPDATE mouse SET GenotypeAbr = geno, DateOfDeath = dod, CageID = cID WHERE Eartag = eTag;
 		ELSE 
 			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "ERROR: Cannot update cage that you do not manage.";
+				SET MESSAGE_TEXT = "ERROR: Cannot update mouse that you do not manage.";
 		END IF;
 	END IF;
 END //

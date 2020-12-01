@@ -3,7 +3,15 @@ Changes From Proposal:
         1) Added genotype table
         2) Replaced origin cage for mouse with two recursive foreign keys
         3) How to get new users to be added to database?
+
+
+        - Can move a mouse you manage into cage of another user- transfers manager status on
+        single mouse ORRRRRRR you can transfer manage of entire cage of mice
+
+
     To be Changed:
+
+
 
 
 Answered Questions:
