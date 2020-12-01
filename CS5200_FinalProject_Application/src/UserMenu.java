@@ -373,6 +373,9 @@ public class UserMenu extends UserMenuAbstract {
 			else if (e.getSQLState().compareTo("23000") == 0) {
 				System.out.println("ERROR: Cannot change rackID or Manager to invalid values.");
 			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while modifying the cage.");
 			}
@@ -434,6 +437,9 @@ public class UserMenu extends UserMenuAbstract {
 			else if (e.getSQLState().compareTo("23000") == 0) {
 				System.out.println("ERROR: Cannot update mouse with invalid genotype or cageID.");
 			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -478,7 +484,6 @@ public class UserMenu extends UserMenuAbstract {
 			}
 			else {
 				System.out.println("ERROR: Problem encountered where deleting cage.");
-
 			}
 		}
 		catch (NumberFormatException nx) {

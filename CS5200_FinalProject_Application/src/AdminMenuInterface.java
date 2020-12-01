@@ -2,9 +2,6 @@ public interface AdminMenuInterface extends UserMenuInterface{
 	// creating methods
 	void addFacilityAccess();
 
-	// reading methods
-
-
 	// update methods
 	void updateUser();
 	void updateFacility();

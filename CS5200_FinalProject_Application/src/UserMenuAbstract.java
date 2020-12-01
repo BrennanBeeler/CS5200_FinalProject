@@ -41,6 +41,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the address.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -69,10 +72,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while adding the facility.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding the facility.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 		catch (NumberFormatException nx) {
 			System.out.println("ERROR: Provided facilityID was not an integer.");
@@ -110,10 +118,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while adding the room.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding the room.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 		catch (NumberFormatException nx) {
 			System.out.println("ERROR: Provided roomID/facilityID was not an integer.");
@@ -188,6 +201,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
@@ -280,6 +296,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the mouse.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -314,10 +333,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while adding the genotype.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding the genotype.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 	}
 
@@ -652,10 +676,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while viewing mice.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while viewing mice.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 	}
 
@@ -876,10 +905,15 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			System.out.println("Address successfully updated for UserID: " + userID + "\n");
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while updating address.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while updating address.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 	}
 

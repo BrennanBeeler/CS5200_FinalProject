@@ -7,7 +7,7 @@ DELIMITER //
 CREATE PROCEDURE login(
 	OUT val INT,
 	IN uID INT,
-    IN pWord VARCHAR(255)
+    IN pWord VARCHAR(25)
 )
 BEGIN   
 	DECLARE usercount INT;

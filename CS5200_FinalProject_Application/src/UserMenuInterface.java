@@ -1,7 +1,6 @@
 public interface UserMenuInterface {
 	void menuStart(int userID);
 
-	// TODO make everything private/remove from interface?
 	// creating methods
 	void addAddress();
 	void addFacility();

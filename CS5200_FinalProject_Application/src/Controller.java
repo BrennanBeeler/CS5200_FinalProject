@@ -107,10 +107,12 @@ public class Controller {
 				return true;
 			}
 		} catch (SQLException ex) {
-			// TODO figure out what to do here
-			System.out.println("SQLException: " + ex.getMessage());
-			System.out.println("SQLState: " + ex.getSQLState());
-			System.out.println("VendorError: " + ex.getErrorCode());
+			if (ex.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
+				System.out.println("ERROR: Problem logging in.");
+			}
 		}
 		return false;
 	}
@@ -151,7 +153,12 @@ public class Controller {
 				System.out.println("Address successfully added to UserID: " + userID);
 			}
 			catch (SQLException e) {
-				System.out.println("ERROR: An error occurred while adding the address.");
+				if (e.getSQLState().compareTo("22001") == 0) {
+					System.out.println("ERROR: Input string is too long.");
+				}
+				else {
+					System.out.println("ERROR: An error occurred while adding the address.");
+				}
 			}
 		}
 	}
@@ -197,11 +204,11 @@ public class Controller {
 				System.out.println("ERROR: Duplicate UserID found. If you are sure this is your "
 						+ "user id please contact an admin for assistance.");
 			}
+			else if (ex.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
-				// TODO: remove?
-				System.out.println("SQLException: " + ex.getMessage());
-				System.out.println("SQLState: " + ex.getSQLState());
-				System.out.println("VendorError: " + ex.getErrorCode());
+				System.out.println("ERROR: Problem creating user account.");
 			}
 		}
 		catch (NumberFormatException e) {

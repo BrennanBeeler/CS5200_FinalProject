@@ -366,6 +366,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while updating user.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -400,6 +403,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while updating facility.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -431,7 +437,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		} catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			} else {
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
 				System.out.println("ERROR: An error occurred while updating room.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
@@ -495,7 +505,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			} else {
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
 				System.out.println("ERROR: An error occurred while updating genotype.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
@@ -616,6 +630,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the mouse.");
@@ -765,7 +782,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			} else {
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
@@ -825,7 +846,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			} else {
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
 				System.out.println("SQLException: " + e.getMessage());
 				System.out.println("SQLState: " + e.getSQLState());
@@ -1022,6 +1047,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting genotype.");
