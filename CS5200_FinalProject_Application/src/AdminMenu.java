@@ -277,10 +277,19 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 		}
 		catch (SQLException e) {
-			System.out.println("ERROR: An error occurred while adding facility access.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot create access for users/facilities that "
+						+ "don't exist.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding facility access.");
+				System.out.println("SQLException: " + e.getMessage());
+				System.out.println("SQLState: " + e.getSQLState());
+				System.out.println("VendorError: " + e.getErrorCode());
+			}
 		}
 		catch (NumberFormatException ex) {
 			System.out.println("ERROR: UserID not formatted as integer.");
@@ -313,9 +322,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 		catch (SQLException e) {
 			System.out.println("ERROR: An error occurred while viewing facility access.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
 		}
 	}
 
@@ -379,7 +385,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (NumberFormatException ex) {
 			System.out.println("ERROR: User ID not formatted as integer.");
 		}
-
 	}
 
 	@Override
@@ -427,8 +432,15 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			int rID = Integer.parseInt(scan.nextLine());
 			callableStatement.setInt(1, rID);
 
-			System.out.println("Please enter light cycle.(light/dark)");
-			String cycle = scan.nextLine();
+			String cycle = "";
+
+			// protects the enum input value
+			while (cycle.toLowerCase().compareTo("light") != 0
+					&& cycle.toLowerCase().compareTo("dark") != 0 ) {
+				System.out.println("Please enter light cycle.(light/dark)");
+				cycle = scan.nextLine();
+			}
+
 			callableStatement.setString(2, cycle);
 
 			callableStatement.execute();
@@ -437,9 +449,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		} catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
-			}
-			else if (e.getSQLState().compareTo("22001") == 0) {
-				System.out.println("ERROR: Input string is too long.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while updating room.");
@@ -451,7 +460,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			System.out.println("ERROR: Room ID not formatted as integer.");
 		}
 	}
-
+--------
 	@Override
 	public void updateRack() {
 		try {

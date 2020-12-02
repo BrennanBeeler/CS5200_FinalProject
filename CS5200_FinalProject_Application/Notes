@@ -37,6 +37,7 @@ a rack- if inactive-> doesn't count
 - CANNOT UPDATE MOUSE DETAILS WITHIN SAME CAGE AS TRIGGERS MORE THAN 5 MICE TRIGGER
 - make sure cageID cant be origin cage on mouse update
 - keep males and females separate
+- deal with data truncation at sql code 22001
 
 
 
@@ -59,7 +60,7 @@ TODO: TODO
 - view mouse doesn't tell when no mice
 - cover all normal errors with customized text
 - checkout view ordering
-- deal with data truncation at sql code 22001
+- protect all enums
 
 
 TODO: MAYBE

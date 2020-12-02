@@ -649,10 +649,15 @@ DELIMITER //
 CREATE PROCEDURE add_facility_access
 (
 	IN uID INT,
-    IN fac VARCHAR(50)
+    IN facID INT
 )
 BEGIN
-	INSERT INTO user_facility_access VALUE(uID, fac);
+	IF EXISTS (SELECT * FROM user_facility_access WHERE UserID = uID AND FacilityID = facID) THEN 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot create duplicate facility access records.";
+	ELSE 
+		INSERT INTO user_facility_access VALUE(uID, facID);
+	END IF;
 END //
 
 DELIMITER ;
@@ -965,7 +970,12 @@ CREATE PROCEDURE update_user
     IN aFlag BOOLEAN
 )
 BEGIN
-	UPDATE `user` SET FirstName = fname, LastName = lname, Email = mail, PhoneNum = phone, AdminFlag = aFlag WHERE UserID = uID;
+	IF EXISTS (SELECT * FROM `user` WHERE UserID = uID) THEN 
+		UPDATE `user` SET FirstName = fname, LastName = lname, Email = mail, PhoneNum = phone, AdminFlag = aFlag WHERE UserID = uID;
+	ELSE 
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot update user that does not exist.";
+	END IF;
 END //
 
 DELIMITER ;
@@ -982,7 +992,12 @@ CREATE PROCEDURE update_facility
     IN facName VARCHAR(50)
 )
 BEGIN
-	UPDATE facility SET FacilityName = facName WHERE FacilityID = facID;
+	IF EXISTS (SELECT * FROM facility WHERE FacilityID = facID) THEN 
+		UPDATE facility SET FacilityName = facName WHERE FacilityID = facID;
+	ELSE 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot update facility that does not exist.";
+	END IF;
 END //
 
 DELIMITER ;
@@ -999,7 +1014,12 @@ CREATE PROCEDURE update_room
     IN cycle VARCHAR(6)
 )
 BEGIN
-	UPDATE room SET LightCycle = cycle WHERE RoomID = rID;
+	IF EXISTS (SELECT * FROM room WHERE RoomID = rID) THEN 
+		UPDATE room SET LightCycle = cycle WHERE RoomID = rID;
+    ELSE 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot update room that does not exist.";
+	END IF;
 END //
 
 DELIMITER ;
