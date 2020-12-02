@@ -57,10 +57,13 @@ TODO: TODO
 - for now going to keep update stuff simple- just update one at a time for both user and admin, but
     later can decide based on time if want to branch out and allow broader changes]
 - can input empty line for fields?
-- view mouse doesn't tell when no mice
+- view mouse doesn't tell when no mice (use rs.next to inform user of lack of entries instead of
+    just giving blank screen.)
 - cover all normal errors with customized text
 - checkout view ordering
 - protect all enums
+- sql catch for duplicate primary key
+- all view mouse need way to indicate that there are no associated records
 
 
 TODO: MAYBE

@@ -460,7 +460,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			System.out.println("ERROR: Room ID not formatted as integer.");
 		}
 	}
---------
+
 	@Override
 	public void updateRack() {
 		try {
@@ -482,11 +482,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot assign rack to room that does not exist.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while updating room.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -520,9 +520,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while updating genotype.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 	}
@@ -643,11 +640,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			else if (e.getSQLState().compareTo("22001") == 0) {
 				System.out.println("ERROR: Input string is too long.");
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Mouse must be assigned valid genotype.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the mouse.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -699,9 +696,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 		catch (SQLException e) {
 			System.out.println("ERROR: An error occurred while getting user data.");
-			System.out.println("SQLException: " + e.getMessage());
-			System.out.println("SQLState: " + e.getSQLState());
-			System.out.println("VendorError: " + e.getErrorCode());
 		}
 		catch (NumberFormatException nx) {
 			System.out.println("ERROR: Provided values where not properly formatted as integers.");
@@ -742,7 +736,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 				callableStatement.execute();
 
-				System.out.println("SUCCESS: Cage updated to inactive and mice marked.");
+				System.out.println("SUCCESS: Cage updated to inactive and mouse DOD marked.");
 			}
 			else {
 				CallableStatement callableStatement =
@@ -756,8 +750,14 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 				String bedding = scan.nextLine();
 				callableStatement.setString(2, bedding);
 
-				System.out.println("Please enter cageStatus.(active/inactive)");
-				String actCage = scan.nextLine();
+				// protects the enum input value
+				String actCage = "";
+				while (actCage.toLowerCase().compareTo("active") != 0
+						&& actCage.toLowerCase().compareTo("inactive") != 0 ) {
+					System.out.println("Please enter cageStatus.(active/inactive)");
+					actCage = scan.nextLine();
+				}
+
 				callableStatement.setString(3, actCage);
 
 				System.out.println("Please enter rackID where cage is housed.");
@@ -795,11 +795,12 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			else if (e.getSQLState().compareTo("22001") == 0) {
 				System.out.println("ERROR: Input string is too long.");
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot assign cage to rack or manager that doesn't"
+						+ "exist.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -859,6 +860,10 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			else if (e.getSQLState().compareTo("22001") == 0) {
 				System.out.println("ERROR: Input string is too long.");
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Mouse must be given a valid genotype and a valid"
+						+ "cage ID.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -910,9 +915,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while removing facility access.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -936,6 +938,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete user who is managing cages.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting user.");
@@ -967,11 +972,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete facility with rooms assigned to it.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting facility.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -996,6 +1001,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete room with racks assigned to it.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting room.");
@@ -1027,6 +1035,9 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete rack with cages assigned to it.");
+			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting rack.");
 				System.out.println("SQLException: " + e.getMessage());
@@ -1057,14 +1068,14 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			if (e.getSQLState().compareTo("45000") == 0) {
 				System.out.println(e.getMessage());
 			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Cannot delete genotype with associated mice.");
+			}
 			else if (e.getSQLState().compareTo("22001") == 0) {
 				System.out.println("ERROR: Input string is too long.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting genotype.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 	}
@@ -1092,9 +1103,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 				System.out.println(e.getMessage());
 			}
 			else {
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+				System.out.println("ERROR: An error occurred while deleting cage.");
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -1126,9 +1135,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 				System.out.println(e.getMessage());
 			}
 			else {
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+				System.out.println("ERROR: An error occurred while deleting mouse.");
 			}
 		}
 		catch (NumberFormatException nx) {

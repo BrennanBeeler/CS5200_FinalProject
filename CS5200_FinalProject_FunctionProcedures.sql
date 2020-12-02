@@ -258,7 +258,7 @@ CREATE TRIGGER insert_mouse_origin
 BEGIN 
 	IF (NEW.OriginCage NOT IN (SELECT CageID FROM cage WHERE Breeding = true)) THEN
 		SIGNAL SQLSTATE '45000'
-			SET MESSAGE_TEXT = "ERROR: Origin cage must be a breeding cage.";
+			SET MESSAGE_TEXT = "ERROR: Origin cage must be an existing breeding cage.";
 	END IF;
 END //
 DELIMITER ;
@@ -421,6 +421,11 @@ BEGIN
 		END;
         
 	START TRANSACTION;
+    
+    IF NOT EXISTS (SELECT * FROM `user` WHERE UserID = uID) THEN
+		SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: UserID does not exist.";
+    END IF;
     
 	SELECT Address INTO adrID FROM `user` WHERE UserID = uID;
     
@@ -1036,7 +1041,12 @@ CREATE PROCEDURE update_rack
     IN rmID INT
 )
 BEGIN
-	UPDATE rack SET RoomID = rmID WHERE RackID = rkID;
+	IF EXISTS (SELECT * FROM rack WHERE RackID = rkID) THEN 
+		UPDATE rack SET RoomID = rmID WHERE RackID = rkID;
+    ELSE 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot update rack that does not exist.";
+	END IF;
 END //
 
 DELIMITER ;
@@ -1053,7 +1063,12 @@ CREATE PROCEDURE update_genotype
     IN genodesc VARCHAR(200)
 )
 BEGIN
-	UPDATE genotype SET GenotypeDetails = genodesc WHERE GenotypeAbr = genoabr;
+	IF EXISTS (SELECT * FROM genotype WHERE GenotypeAbr = genoabr) THEN 
+		UPDATE genotype SET GenotypeDetails = genodesc WHERE GenotypeAbr = genoabr;
+    ELSE 
+		SIGNAL SQLSTATE '45000'
+			SET MESSAGE_TEXT = "ERROR: Cannot update genotype that does not exist.";
+	END IF;
 END //
 
 DELIMITER ;
