@@ -441,10 +441,7 @@ public class UserMenu extends UserMenuAbstract {
 				System.out.println("ERROR: Input string is too long.");
 			}
 			else {
-				System.out.println("ERROR: An error occurred while adding the cage.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+				System.out.println("ERROR: An error occurred while adding the mouse.");
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -514,9 +511,7 @@ public class UserMenu extends UserMenuAbstract {
 				System.out.println(e.getMessage());
 			}
 			else {
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+				System.out.println("ERROR: Problem deleting mouse.");
 			}
 		}
 		catch (NumberFormatException nx) {

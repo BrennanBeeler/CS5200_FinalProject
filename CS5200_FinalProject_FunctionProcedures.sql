@@ -80,10 +80,9 @@ BEGIN
             RESIGNAL;
 		END;
         
-    IF (SELECT Address FROM `user` WHERE UserID = user_id) IS NULL THEN
-    
-		START TRANSACTION;
+    START TRANSACTION;    
         
+    IF (SELECT Address FROM `user` WHERE UserID = user_id) IS NULL THEN
 		-- if exists then get its primary key and assign it to the new user - ie shared housing
 		IF ((SELECT COUNT(*) FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip) > 0) THEN
 			SELECT AddressIndex INTO pk_adr FROM address WHERE Street = user_straddress AND City = user_city AND State = user_state AND Zip = user_zip;
@@ -93,13 +92,12 @@ BEGIN
 		END IF;
 		
 		UPDATE `user` SET Address = pk_adr WHERE UserID = user_id;
-		
-		COMMIT;
-        
 	ELSE 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: This user already has an address.";
     END IF;
+    
+	COMMIT;
 END //
 
 DELIMITER ;
@@ -220,27 +218,36 @@ CREATE PROCEDURE new_mouse
     IN manID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+	START TRANSACTION;   
 
 
-IF (cID) NOT IN (SELECT CageID FROM cage) THEN
-		SIGNAL SQLSTATE '45000'
-			SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage that doens't exist.";
-ELSEIF (cID = originID ) THEN
-		SIGNAL SQLSTATE '45000'
-			SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
-ELSE 
-	IF manID IS NOT NULL THEN
-		IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
+
+	IF (cID) NOT IN (SELECT CageID FROM cage) THEN
 			SIGNAL SQLSTATE '45000'
-				SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage of another user.";
-		ELSE
+				SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage that doens't exist.";
+	ELSEIF (cID = originID ) THEN
+			SIGNAL SQLSTATE '45000'
+				SET MESSAGE_TEXT = "ERROR: Cannot have same cage and origin cage.";
+	ELSE 
+		IF manID IS NOT NULL THEN
+			IF NOT EXISTS (SELECT CageID FROM cage WHERE Manager = manID AND CageID = cID) THEN
+				SIGNAL SQLSTATE '45000'
+					SET MESSAGE_TEXT = "ERROR: Cannot add mouse to cage of another user.";
+			ELSE
+				INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
+			END IF;
+		ELSE 
 			INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
 		END IF;
-	ELSE 
-		INSERT INTO mouse VALUE (eTag, geno, sx, dob, dod, cID, originID);
 	END IF;
-END IF;
 
+	COMMIT;
 	
 END //
 
@@ -454,12 +461,22 @@ CREATE PROCEDURE view_address
 	IN uID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+    START TRANSACTION;   
+
 	IF (SELECT Address FROM `user` WHERE UserID = uID) IS NULL THEN
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "No address associated with user.";
 	ELSE
 		SELECT CONCAT(Street, " ", City, " ", State, " ", Zip) AS "Address" FROM address WHERE AddressIndex = (SELECT Address FROM `user` WHERE UserID = uID);
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -488,6 +505,14 @@ CREATE PROCEDURE view_facility_access
 	IN uID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+    START TRANSACTION;   
+
 	IF (uID IS NULL) THEN
 		SELECT uf.UserID, u.FirstName, u.LastName, uf.FacilityID, f.FacilityName 
         FROM user_facility_access AS uf 
@@ -504,7 +529,8 @@ BEGIN
 		ON uf.FacilityID = f.FacilityID
 		WHERE uf.UserID = uID;
     END IF;
-
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -562,6 +588,14 @@ CREATE PROCEDURE delete_cage
     IN cID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+    START TRANSACTION;   	
+
 	IF NOT EXISTS (SELECT * FROM cage WHERE CageID = cID) THEN
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot delete cage that does not exist.";
@@ -575,6 +609,8 @@ BEGIN
 				SET MESSAGE_TEXT = "ERROR: Cannot delete cage that you do not manage.";
 		END IF;
     END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -657,12 +693,22 @@ CREATE PROCEDURE add_facility_access
     IN facID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+        
+    START TRANSACTION;   	
+
 	IF EXISTS (SELECT * FROM user_facility_access WHERE UserID = uID AND FacilityID = facID) THEN 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot create duplicate facility access records.";
 	ELSE 
 		INSERT INTO user_facility_access VALUE(uID, facID);
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -714,12 +760,22 @@ CREATE PROCEDURE delete_facility_access
     IN facID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM user_facility_access WHERE UserID = uID AND FacilityID = facID) THEN
 		DELETE FROM user_facility_access WHERE UserID = uID AND FacilityID = facID;
 	ELSE
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: No access to remove.";
     END IF;
+    
+    COMMIT;
 	
 END //
 
@@ -736,12 +792,22 @@ CREATE PROCEDURE delete_facility
 	IN facID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM facility WHERE FacilityID = facID) THEN
 		DELETE FROM facility WHERE FacilityID = facID;
 	ELSE
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: There is no facility associated with that ID.";
     END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -758,12 +824,22 @@ CREATE PROCEDURE delete_room
 	IN rmID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM room WHERE RoomID = rmID) THEN
 		DELETE FROM room WHERE RoomID = rmID;
 	ELSE
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: There is no room associated with that ID.";
     END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -779,12 +855,22 @@ CREATE PROCEDURE delete_rack
 	IN rkID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM rack WHERE RackID = rkID) THEN
 		DELETE FROM rack WHERE RackID = rkID;
 	ELSE
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: There is no rack associated with that ID.";
     END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -801,12 +887,22 @@ CREATE PROCEDURE delete_genotype
 	IN geno VARCHAR(10)
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM genotype WHERE GenotypeAbr = geno) THEN
 		DELETE FROM genotype WHERE GenotypeAbr = geno;
 	ELSE
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: There is no genotype with that abbreviation";
     END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -824,6 +920,14 @@ CREATE PROCEDURE delete_mouse
     IN eTag INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF NOT EXISTS (SELECT * FROM mouse WHERE Eartag = eTag) THEN
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot delete mouse that does not exist.";
@@ -837,6 +941,8 @@ BEGIN
 				SET MESSAGE_TEXT = "ERROR: Cannot delete mouse that you do not manage.";
 		END IF;
     END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -899,6 +1005,15 @@ CREATE PROCEDURE update_cage
     IN manID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
+
 	IF NOT EXISTS (SELECT * FROM cage WHERE CageID = cID) THEN 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot update cage that doesn't exist.";
@@ -923,6 +1038,8 @@ BEGIN
 		END IF;
     END IF;	
     
+    COMMIT;
+    
 END //
 
 DELIMITER ;
@@ -942,6 +1059,15 @@ CREATE PROCEDURE update_mouse
     IN manID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
+
 	IF NOT EXISTS (SELECT * FROM mouse WHERE Eartag = eTag) THEN
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot update mouse that does not exist.";
@@ -955,6 +1081,8 @@ BEGIN
 				SET MESSAGE_TEXT = "ERROR: Cannot update mouse that you do not manage.";
 		END IF;
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -975,12 +1103,22 @@ CREATE PROCEDURE update_user
     IN aFlag BOOLEAN
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM `user` WHERE UserID = uID) THEN 
 		UPDATE `user` SET FirstName = fname, LastName = lname, Email = mail, PhoneNum = phone, AdminFlag = aFlag WHERE UserID = uID;
 	ELSE 
 		SIGNAL SQLSTATE '45000'
 				SET MESSAGE_TEXT = "ERROR: Cannot update user that does not exist.";
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -997,12 +1135,22 @@ CREATE PROCEDURE update_facility
     IN facName VARCHAR(50)
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM facility WHERE FacilityID = facID) THEN 
 		UPDATE facility SET FacilityName = facName WHERE FacilityID = facID;
 	ELSE 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot update facility that does not exist.";
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -1019,12 +1167,22 @@ CREATE PROCEDURE update_room
     IN cycle VARCHAR(6)
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM room WHERE RoomID = rID) THEN 
 		UPDATE room SET LightCycle = cycle WHERE RoomID = rID;
     ELSE 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot update room that does not exist.";
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -1041,12 +1199,22 @@ CREATE PROCEDURE update_rack
     IN rmID INT
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM rack WHERE RackID = rkID) THEN 
 		UPDATE rack SET RoomID = rmID WHERE RackID = rkID;
     ELSE 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot update rack that does not exist.";
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;
@@ -1063,12 +1231,22 @@ CREATE PROCEDURE update_genotype
     IN genodesc VARCHAR(200)
 )
 BEGIN
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+		BEGIN
+			ROLLBACK;
+            RESIGNAL;
+		END;
+
+	START TRANSACTION;
+
 	IF EXISTS (SELECT * FROM genotype WHERE GenotypeAbr = genoabr) THEN 
 		UPDATE genotype SET GenotypeDetails = genodesc WHERE GenotypeAbr = genoabr;
     ELSE 
 		SIGNAL SQLSTATE '45000'
 			SET MESSAGE_TEXT = "ERROR: Cannot update genotype that does not exist.";
 	END IF;
+    
+    COMMIT;
 END //
 
 DELIMITER ;

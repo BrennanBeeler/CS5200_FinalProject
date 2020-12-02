@@ -38,14 +38,13 @@ a rack- if inactive-> doesn't count
 - make sure cageID cant be origin cage on mouse update
 - keep males and females separate
 - deal with data truncation at sql code 22001
-
+- Change all if statements to be transactions
+- sql catch for duplicate primary key
+- REMOVE ALL SQL EXCEPTIONS- must be english
 
 
 
 TODO: TODO
-- REMOVE ALL SQL EXCEPTIONS- must be english
-
-
 - Show possible values before insertion
 - Make sure that each call to stored procedure is protected with catch that is appropriate
 - add descriptions of data order
@@ -62,7 +61,6 @@ TODO: TODO
 - cover all normal errors with customized text
 - checkout view ordering
 - protect all enums
-- sql catch for duplicate primary key
 - all view mouse need way to indicate that there are no associated records
 
 

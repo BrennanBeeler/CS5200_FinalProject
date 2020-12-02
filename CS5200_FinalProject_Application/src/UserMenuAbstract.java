@@ -46,9 +46,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the address.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 	}
@@ -125,13 +122,10 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 				System.out.println("ERROR: That facility ID does not exist.");
 			}
 			else if (e.getSQLState().compareTo("23000") == 0 && e.getErrorCode() == 1062) {
-				System.out.println("ERROR: That room ID already exists.");
+				System.out.println("ERROR: That room already exists.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the room.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -236,9 +230,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the cage.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -907,9 +898,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 			else {
 				System.out.println("ERROR: An error occurred while updating address.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 	}
@@ -931,9 +919,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting address.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 	}

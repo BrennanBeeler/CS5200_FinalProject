@@ -286,9 +286,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding facility access.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -377,9 +374,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while updating user.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -413,9 +407,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while updating facility.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -452,9 +443,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while updating room.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		} catch (NumberFormatException ex) {
 			System.out.println("ERROR: Room ID not formatted as integer.");
@@ -865,10 +853,8 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 						+ "cage ID.");
 			}
 			else {
-				System.out.println("ERROR: An error occurred while adding the cage.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
+				System.out.println("ERROR: An error occurred while updating the mouse.");
+
 			}
 		}
 		catch (NumberFormatException nx) {
@@ -944,9 +930,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting user.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -1007,9 +990,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting room.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
@@ -1040,9 +1020,6 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			}
 			else {
 				System.out.println("ERROR: An error occurred while deleting rack.");
-				System.out.println("SQLException: " + e.getMessage());
-				System.out.println("SQLState: " + e.getSQLState());
-				System.out.println("VendorError: " + e.getErrorCode());
 			}
 		}
 		catch (NumberFormatException ex) {
