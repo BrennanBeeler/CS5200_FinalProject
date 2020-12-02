@@ -237,7 +237,106 @@ public class UserMenu extends UserMenuAbstract {
 
 	@Override
 	public void addMouse() {
-		addMouseHelper(userID);
+		// TODO: figure out if want to modify the procedure or check contains()
+		try {
+			CallableStatement callableStatement =
+					conn.prepareCall("{CALL new_mouse(?, ?, ?, ?, ?, ?, ?, ?)}");
+
+			System.out.println("Please enter eartag.");
+			int earTag = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(1, earTag);
+
+			System.out.println("Please enter genotype abbreviation.");
+			String geno = scan.nextLine();
+			callableStatement.setString(2, geno);
+
+			String sex = "";
+			while (sex.toLowerCase().compareTo("m") != 0
+					&& sex.toLowerCase().compareTo("f") != 0) {
+				System.out.println("Please enter sex.(m/f)");
+				sex = scan.nextLine();
+			}
+
+			callableStatement.setString(3, sex);
+
+			System.out.println("Please enter date of birth.(mm-dd-yyyy)");
+			String dob = scan.nextLine();
+			// get date from string and store in SimpleDateFormat
+			SimpleDateFormat smp_dob = new SimpleDateFormat("MM-dd-yyyy");
+			// translate from smp_date to util to sql
+			java.util.Date util_dob = smp_dob.parse(dob);
+			java.sql.Date sql_dob = new java.sql.Date(util_dob.getTime());
+			callableStatement.setDate(4, sql_dob);
+
+			String input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Is the mouse dead? (y/n)");
+				input = scan.nextLine();
+			}
+
+			if (input.toLowerCase().compareTo("y") == 0) {
+				System.out.println("Please enter date of death.(mm-dd-yyyy)");
+				String dod = scan.nextLine();
+				// get date from string and store in SimpleDateFormat
+				SimpleDateFormat smp_dod = new SimpleDateFormat("MM-dd-yyyy");
+				// translate from smp_date to util to sql
+				java.util.Date util_dod = smp_dod.parse(dod);
+				java.sql.Date sql_dod = new java.sql.Date(util_dod.getTime());
+				callableStatement.setDate(5, sql_dod);
+			}
+			else {
+				callableStatement.setNull(5, Types.DATE);
+			}
+
+			System.out.println("Please enter cageID where mouse is housed.");
+			int cageID = Integer.parseInt(scan.nextLine());
+			callableStatement.setInt(6, cageID);
+
+			// Allows mice from external sources to be entered as null - should be only way
+			input = "";
+			while (input.toLowerCase().compareTo("y") != 0
+					&& input.toLowerCase().compareTo("n") != 0) {
+				System.out.println("Mouse from external source? (y/n)");
+				input = scan.nextLine();
+			}
+
+			if (input.toLowerCase().compareTo("y") == 0) {
+				callableStatement.setNull(7, Types.INTEGER);
+			}
+			else {
+				System.out.println("Please enter origin cage ID.");
+				int origin = Integer.parseInt(scan.nextLine());
+				callableStatement.setInt(7, origin);
+			}
+
+			// TO be used to confirm that the mouse is added to a cage managed by specified user
+			callableStatement.setInt(8, userID);
+
+			if (callableStatement.executeUpdate() == 1) {
+				System.out.println("Mouse successfully added to database.\n");
+			}
+		}
+		catch (SQLException e) {
+			if (e.getSQLState().compareTo("45000") == 0) {
+				System.out.println(e.getMessage());
+			}
+			else if (e.getSQLState().compareTo("22001") == 0) {
+				System.out.println("ERROR: Input string is too long.");
+			}
+			else if (e.getSQLState().compareTo("23000") == 0) {
+				System.out.println("ERROR: Mouse must be assigned valid genotype.");
+			}
+			else {
+				System.out.println("ERROR: An error occurred while adding the mouse.");
+			}
+		}
+		catch (NumberFormatException nx) {
+			System.out.println("ERROR: Provided values where not properly formatted as integers.");
+		}
+		catch (ParseException e) {
+			System.out.println("ERROR: Incorrect date formatting.");
+		}
 	}
 
 	@Override
@@ -334,8 +433,13 @@ public class UserMenu extends UserMenuAbstract {
 				String bedding = scan.nextLine();
 				callableStatement.setString(2, bedding);
 
-				System.out.println("Please enter cageStatus.(active/inactive)");
-				String actCage = scan.nextLine();
+				String actCage = "";
+				while (input.toLowerCase().compareTo("active") != 0
+						&& input.toLowerCase().compareTo("inactive") != 0) {
+					System.out.println("Please enter cageStatus.(active/inactive)");
+					input = scan.nextLine();
+				}
+
 				callableStatement.setString(3, actCage);
 
 				System.out.println("Please enter rackID where cage is housed.");

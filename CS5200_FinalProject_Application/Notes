@@ -5,25 +5,11 @@ Changes From Proposal:
         3) How to get new users to be added to database?
 
 
-        - Can move a mouse you manage into cage of another user- transfers manager status on
-        single mouse ORRRRRRR you can transfer manage of entire cage of mice
-
-
-    To be Changed:
-
-
-
-
 Answered Questions:
 1) How to control number of cages per rack - triggers
 
-
-
 Questions:
-1) Is if else a transaction - new_mouse, insert_mouse_cage_limit, update_mouse_cage_limit,
-    insert_mouse_sex_restrict, update_mouse_sex_restrict, view_address, view_facility_access,
-       delete_cage, delete_facility_access, delete_facility, delete_room, delete_rack, delete_genotype,
-       delete_mouse, update_cage, update_mouse
+1)
 
 TODO: Finished
 - change add address so it allows same address if entered to reference same entry
@@ -41,48 +27,29 @@ a rack- if inactive-> doesn't count
 - Change all if statements to be transactions
 - sql catch for duplicate primary key
 - REMOVE ALL SQL EXCEPTIONS- must be english
-
+- make origin cage only breeding?
+- Make sure that each call to stored procedure is protected with catch that is appropriate
+- test cage number triggers
+- make sure on deletion that it checks if something exists - delete_cage, delete_mouse
+- protect all enums
 
 
 TODO: TODO
+- FIGURE OUT FOREIGN KEY MANAGEMENT FOR ADD MOUSE IN BOTH USER AND ADMIN
+- TEST ADD MOUSE
+
 - Show possible values before insertion
-- Make sure that each call to stored procedure is protected with catch that is appropriate
 - add descriptions of data order
 - go through all stored procedures and make sure to check comments
-- test cage number triggers
+
 - remove checks to see return type of execute etc.
-- test everything
-- make sure on deletion that it checks if something exists - delete_cage, delete_mouse
-- for now going to keep update stuff simple- just update one at a time for both user and admin, but
-    later can decide based on time if want to branch out and allow broader changes]
 - can input empty line for fields?
 - view mouse doesn't tell when no mice (use rs.next to inform user of lack of entries instead of
     just giving blank screen.)
-- cover all normal errors with customized text
 - checkout view ordering
-- protect all enums
-- all view mouse need way to indicate that there are no associated records
 
 
 TODO: MAYBE
-- Increase facility name length allowed
-- enum will accept integer values... Fix?
-- remove roomID? use facilityID + Room Num instead?
-- allow user to update room beyond just light
-- allow user to update primary key of tables as admin?
 - use https://stackoverflow.com/questions/18672643/how-to-print-a-table-of-information-in-java to
     create pretty tables
-- make origin cage only breeding?
 
-
-Thinking:
--Adding is easy - just input data when asked for it (both user and admin)
--Removing should be restrictive and only allow deletion of one at a time, since data should only
-    be removed from database if there was some kind of entry error/massive change in real world
--Update should allow more broad scope changes
-    + User should only be able to make small single serving updates...
-
-
--View
-    -To view mouse - mouse data + cage + rack + room + facility + manager
-        + Filter by various stuff - sex, manager, facility, room, rack, cage, genotype

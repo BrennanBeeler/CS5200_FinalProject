@@ -545,6 +545,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 		}
 	}
 
+	// TODO: figure out if want to modify the procedure or check contains()
 	@Override
 	public void addMouse() {
 		try {
@@ -559,8 +560,12 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			String geno = scan.nextLine();
 			callableStatement.setString(2, geno);
 
-			System.out.println("Please enter sex.(m/f)");
-			String sex = scan.nextLine();
+			String sex = "";
+			while (sex.toLowerCase().compareTo("m") != 0
+					&& sex.toLowerCase().compareTo("f") != 0) {
+				System.out.println("Please enter sex.(m/f)");
+				sex = scan.nextLine();
+			}
 			callableStatement.setString(3, sex);
 
 			System.out.println("Please enter date of birth.(mm-dd-yyyy)");
