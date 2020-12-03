@@ -32,12 +32,10 @@ a rack- if inactive-> doesn't count
 - test cage number triggers
 - make sure on deletion that it checks if something exists - delete_cage, delete_mouse
 - protect all enums
-
+- FIGURE OUT FOREIGN KEY MANAGEMENT FOR ADD MOUSE IN BOTH USER AND ADMIN
 
 TODO: TODO
-- FIGURE OUT FOREIGN KEY MANAGEMENT FOR ADD MOUSE IN BOTH USER AND ADMIN
 - TEST ADD MOUSE
-
 - Show possible values before insertion
 - add descriptions of data order
 - go through all stored procedures and make sure to check comments
@@ -48,8 +46,8 @@ TODO: TODO
     just giving blank screen.)
 - checkout view ordering
 
+- for final db creation order as TABLES, TRIGGERS/PROCEDURES, INSERT DATA ?
+    + OR manually enter filled cages data
 
-TODO: MAYBE
-- use https://stackoverflow.com/questions/18672643/how-to-print-a-table-of-information-in-java to
-    create pretty tables
+
 

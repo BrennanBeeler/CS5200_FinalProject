@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Scanner;
 import java.sql.Types;
 
-//TODO Maybe rename to not be controller since not using MCV architecture
 public class Controller {
 
 	private int appUserID;

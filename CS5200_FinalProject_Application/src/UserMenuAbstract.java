@@ -210,7 +210,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 				System.out.println(e.getMessage());
 			}
 			else if (e.getSQLState().compareTo("23000") == 0 && e.getErrorCode() == 1452) {
-				// TODO: determine if this is better
 				if (e.getMessage().toLowerCase().contains("user")) {
 					System.out.println("ERROR: That user ID does not exist.");
 				}

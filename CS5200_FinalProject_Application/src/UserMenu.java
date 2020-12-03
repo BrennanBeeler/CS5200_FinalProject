@@ -237,7 +237,6 @@ public class UserMenu extends UserMenuAbstract {
 
 	@Override
 	public void addMouse() {
-		// TODO: figure out if want to modify the procedure or check contains()
 		try {
 			CallableStatement callableStatement =
 					conn.prepareCall("{CALL new_mouse(?, ?, ?, ?, ?, ?, ?, ?)}");
@@ -325,7 +324,8 @@ public class UserMenu extends UserMenuAbstract {
 				System.out.println("ERROR: Input string is too long.");
 			}
 			else if (e.getSQLState().compareTo("23000") == 0) {
-				System.out.println("ERROR: Mouse must be assigned valid genotype.");
+				System.out.println("ERROR: Mouse must be assigned a valid genotype, and the "
+						+ "cage and origin cage ID must be valid.");
 			}
 			else {
 				System.out.println("ERROR: An error occurred while adding the mouse.");
