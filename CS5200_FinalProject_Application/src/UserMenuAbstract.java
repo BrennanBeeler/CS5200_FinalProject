@@ -84,8 +84,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 	@Override
 	public void addRoom() {
 		try {
-			// TODO show facilites ?
-
 			CallableStatement callableStatement =
 					conn.prepareCall("{CALL new_room(?, ?, ?)}");
 
@@ -132,8 +130,6 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 	@Override
 	public void addRack() {
 		try {
-			// TODO show rooms ?
-
 			CallableStatement callableStatement =
 					conn.prepareCall("{CALL new_rack(?, ?, ?)}");
 

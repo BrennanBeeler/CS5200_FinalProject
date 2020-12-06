@@ -5,12 +5,6 @@ Changes From Proposal:
         3) How to get new users to be added to database?
 
 
-Answered Questions:
-1) How to control number of cages per rack - triggers
-
-Questions:
-1)
-
 TODO: Finished
 - change add address so it allows same address if entered to reference same entry
 - Create abstract class for UserMenu and AdminMenu - create statements etc. where applicable
@@ -18,7 +12,7 @@ TODO: Finished
 - turn new_address into transaction
 - look to make transactions- delete_address etc.
 - Remove filled slots from rack and instead use a trigger to determine if okay to add cage to
-a rack- if inactive-> doesn't count
+    a rack- if inactive-> doesn't count
 - test sex triggers
 - CANNOT UPDATE MOUSE DETAILS WITHIN SAME CAGE AS TRIGGERS MORE THAN 5 MICE TRIGGER
 - make sure cageID cant be origin cage on mouse update
@@ -33,21 +27,19 @@ a rack- if inactive-> doesn't count
 - make sure on deletion that it checks if something exists - delete_cage, delete_mouse
 - protect all enums
 - FIGURE OUT FOREIGN KEY MANAGEMENT FOR ADD MOUSE IN BOTH USER AND ADMIN
+- go through all stored procedures and make sure to check comments
+- manually enter filled cages data
+
 
 TODO: TODO
 - TEST ADD MOUSE
-- Show possible values before insertion
 - add descriptions of data order
-- go through all stored procedures and make sure to check comments
-
 - remove checks to see return type of execute etc.
 - can input empty line for fields?
 - view mouse doesn't tell when no mice (use rs.next to inform user of lack of entries instead of
     just giving blank screen.)
 - checkout view ordering
-
 - for final db creation order as TABLES, TRIGGERS/PROCEDURES, INSERT DATA ?
-    + OR manually enter filled cages data
 
 
 

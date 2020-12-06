@@ -90,6 +90,7 @@ CREATE TABLE rack
     CONSTRAINT rack_to_room_fk FOREIGN KEY (RoomID) REFERENCES room(RoomID) ON UPDATE RESTRICT ON DELETE RESTRICT
 );
 
+-- Hard coded filled slots per Professor advice- removed initialize procedure
 INSERT INTO rack VALUE (1, 40, 2, 1);
 INSERT INTO rack VALUE (2, 10, 1, 2);
 INSERT INTO rack VALUE (37, 2, 2, 7);

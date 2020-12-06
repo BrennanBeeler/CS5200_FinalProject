@@ -36,6 +36,7 @@ public class Controller {
 //
 //			if (userName.toLowerCase().compareTo("q") == 0) {
 //				System.exit(0);
+//				scan.close();
 //			}
 //
 //			System.out.println("Please enter SQL password.");
