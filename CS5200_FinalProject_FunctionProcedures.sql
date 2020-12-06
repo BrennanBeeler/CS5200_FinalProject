@@ -3,7 +3,7 @@ use mouse_housing;
 DROP PROCEDURE IF EXISTS login;
 
 DELIMITER //
--- Determines user access level
+
 CREATE PROCEDURE login(
 	OUT val INT,
 	IN uID INT,
@@ -614,24 +614,6 @@ BEGIN
 END //
 
 DELIMITER ;
-
--- --------------------------------------------------------------
-
-DROP PROCEDURE IF EXISTS initialize_rack_filled;
-
-DELIMITER //
-
-CREATE PROCEDURE initialize_rack_filled()
-BEGIN
-	UPDATE rack AS r SET FilledSlots = (SELECT COUNT(*) FROM cage AS c WHERE r.RackID = c.RackID AND c.CageStatus = 'Active');
-END //
-
-DELIMITER ;
-
-
-CALL initialize_rack_filled(); -- TODO: call somewhere else ------------------------------------------------------------------------------------------------------
-
-
 
 -- ------------------------------------------------------------------------
 DROP TRIGGER IF EXISTS insert_cage_trigger;
