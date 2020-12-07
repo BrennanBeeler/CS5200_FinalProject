@@ -375,6 +375,11 @@ public class UserMenu extends UserMenuAbstract {
 			callableStatement.setInt(1, userID);
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("You do not have any facility access entries.");
+				return;
+			}
+
 			System.out.println("UserId, UserName, FacilityID: FacilityName");
 
 			while (rs.next()) {

@@ -61,9 +61,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			String fname = scan.nextLine();
 			newAddressStmt.setString(2, fname);
 
-			if (newAddressStmt.executeUpdate() == 1) {
-				System.out.println("Facility successfully added to database.\n");
-			}
+			newAddressStmt.executeUpdate();
+
+			System.out.println("Facility successfully added to database.\n");
 		}
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("22001") == 0) {
@@ -104,9 +104,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			callableStatement.setString(3, lightCycle);
 
-			if (callableStatement.executeUpdate() == 1) {
-				System.out.println("Room successfully added to database.\n");
-			}
+			callableStatement.executeUpdate();
+
+			System.out.println("Room successfully added to database.\n");
 		}
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("22001") == 0) {
@@ -146,9 +146,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			callableStatement.setInt(3, roomID);
 
-			if (callableStatement.executeUpdate() == 1) {
-				System.out.println("Rack successfully added to database.\n");
-			}
+			callableStatement.executeUpdate();
+
+			System.out.println("Rack successfully added to database.\n");
 		}
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("23000") == 0 && e.getErrorCode() == 1452) {
@@ -197,9 +197,9 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			callableStatement.setBoolean(6, breed);
 
-			if (callableStatement.executeUpdate() == 1) {
-				System.out.println("Cage successfully added to database.\n");
-			}
+			callableStatement.executeUpdate();
+
+			System.out.println("Cage successfully added to database.\n");
 		}
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
@@ -267,6 +267,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no address entries.");
+				return;
+			}
+
+			System.out.println("Address");
+
 			while (rs.next()) {
 				String address = rs.getString("Address");
 				System.out.println("UserID " + userID + " address: " + address);
@@ -290,6 +297,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no facility entries.");
+				return;
+			}
+
+			System.out.println("Facility ID: Facility Name, Number of rooms");
+
 			while (rs.next()) {
 				int fID = rs.getInt("FacilityID");
 				String facilityName = rs.getString("FacilityName");
@@ -309,6 +323,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 					conn.prepareCall("{CALL view_room()}");
 
 			ResultSet rs = callableStatement.executeQuery();
+
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no room entries.");
+				return;
+			}
 
 			System.out.println("RoomID, RoomNumber, Light Cycle, FacilityID: FacilityName");
 
@@ -336,6 +355,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no rack entries.");
+				return;
+			}
+
 			System.out.println("RackID, Filled/TotalSlots, RoomID");
 
 			while (rs.next()) {
@@ -360,8 +384,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no cage entries.");
+				return;
+			}
+
 			System.out.println("CageStatus, CageID, Breeding, ManagerID, RackID, "
-					+ "{Genotypes}, Bedding");
+					+ "{Genotypes in Cage}, Bedding");
 
 			while (rs.next()) {
 				String cageStatus = rs.getString("CageStatus");
@@ -437,6 +466,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no mouse entries.");
+				return;
+			}
+
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
 					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName, "
 					+ "Manager, Breeding");
@@ -484,6 +518,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			callableStatement.setInt(1, uID);
 
 			ResultSet rs = callableStatement.executeQuery();
+
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no mouse entries for that user.");
+				return;
+			}
 
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
 					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
@@ -535,6 +574,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			callableStatement.setString(1, geno);
 
 			ResultSet rs = callableStatement.executeQuery();
+
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no mouse entries for that genotype.");
+				return;
+			}
 
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
 					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
@@ -589,6 +633,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no mouse entries for that room.");
+				return;
+			}
+
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
 					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
 					+ "Manager, Breeding");
@@ -640,6 +689,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no mouse entries for that cage.");
+				return;
+			}
+
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
 					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
 					+ "Manager, Breeding");
@@ -690,6 +744,11 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			callableStatement.setInt(1, facID);
 
 			ResultSet rs = callableStatement.executeQuery();
+
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no mouse entries for that facility.");
+				return;
+			}
 
 			System.out.println("CageID, Eartag, GenotypeAbr, Sex, DOB, "
 					+ "WeeksOld, DateOfDeath, OriginCage, RackID, RoomNumber, FacilityName"
@@ -743,6 +802,13 @@ public abstract class UserMenuAbstract implements UserMenuInterface{
 			CallableStatement callableStatement =
 					conn.prepareCall("{CALL view_genotype()}");
 			ResultSet rs = callableStatement.executeQuery();
+
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no genotype entries.");
+				return;
+			}
+
+			System.out.println("Genotype Abbreviation: Genotype Description");
 
 			while (rs.next()) {
 				String genoabr = rs.getString("GenotypeAbr");

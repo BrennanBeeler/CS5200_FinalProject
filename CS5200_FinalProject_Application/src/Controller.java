@@ -29,22 +29,17 @@ public class Controller {
 		boolean connFlag = false;
 
 		while (!connFlag) {
-			// TODO uncomment
 			// Use scanner to get username and password
-//			System.out.println("Please enter SQL login username. Type 'q' to quit.");
-//			String userName = scan.nextLine();
-//
-//			if (userName.toLowerCase().compareTo("q") == 0) {
-//				System.exit(0);
-//				scan.close();
-//			}
-//
-//			System.out.println("Please enter SQL password.");
-//			String userPassword = scan.nextLine();
+			System.out.println("Please enter SQL login username. Type 'q' to quit.");
+			String userName = scan.nextLine();
 
-			// TODO remove
-			String userName = "root";
-			String userPassword = "orbitmyHead93";
+			if (userName.toLowerCase().compareTo("q") == 0) {
+				System.exit(0);
+				scan.close();
+			}
+
+			System.out.println("Please enter SQL password.");
+			String userPassword = scan.nextLine();
 
 			// try to connect to server
 			try {

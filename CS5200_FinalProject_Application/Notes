@@ -1,8 +1,4 @@
-Changes From Proposal:
-    Completed:
-        1) Added genotype table
-        2) Replaced origin cage for mouse with two recursive foreign keys
-        3) How to get new users to be added to database?
+
 
 
 TODO: Finished
@@ -29,16 +25,13 @@ TODO: Finished
 - FIGURE OUT FOREIGN KEY MANAGEMENT FOR ADD MOUSE IN BOTH USER AND ADMIN
 - go through all stored procedures and make sure to check comments
 - manually enter filled cages data
+- add descriptions of data order
+- view mouse doesn't tell when no mice (use rs.next to inform user of lack of entries instead of
+    just giving blank screen.)
+- remove checks to see return type of execute etc.
 
 
 TODO: TODO
-- TEST ADD MOUSE
-- add descriptions of data order
-- remove checks to see return type of execute etc.
-- can input empty line for fields?
-- view mouse doesn't tell when no mice (use rs.next to inform user of lack of entries instead of
-    just giving blank screen.)
-- checkout view ordering
 - for final db creation order as TABLES, TRIGGERS/PROCEDURES, INSERT DATA ?
 
 

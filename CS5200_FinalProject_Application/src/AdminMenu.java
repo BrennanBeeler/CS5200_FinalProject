@@ -303,6 +303,11 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 
 			ResultSet rs = callableStatement.executeQuery();
 
+			if (!rs.isBeforeFirst()) {
+				System.out.println("There are no entries.");
+				return;
+			}
+
 			System.out.println("UserID, Name, FacilityID, FacilityName\n"
 					+ "---------------------------------------------------------------------");
 
@@ -621,9 +626,10 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 			// TO be used to confirm that the mouse is added to a cage managed by specified user
 			callableStatement.setNull(8, Types.INTEGER);
 
-			if (callableStatement.executeUpdate() == 1) {
-				System.out.println("Mouse successfully added to database.\n");
-			}
+			callableStatement.executeUpdate();
+
+			System.out.println("Mouse successfully added to database.\n");
+
 		}
 		catch (SQLException e) {
 			if (e.getSQLState().compareTo("45000") == 0) {
@@ -668,8 +674,7 @@ public class AdminMenu extends UserMenuAbstract implements AdminMenuInterface {
 					conn.prepareCall("{CALL admin_view_user()}");
 			ResultSet rs = callableStatement.executeQuery();
 
-			System.out.println("UserID, Name, Password, Email, Phone, Admin, address");
-			System.out.println("------------------------------------------------------------------");
+			System.out.println("UserID, Name, Password, Email, Phone, Admin, Address");
 
 			while (rs.next()) {
 				int uID = rs.getInt("UserID");
